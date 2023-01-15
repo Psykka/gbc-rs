@@ -1,5 +1,6 @@
-use crate::registers::Registers;
+use crate::registers::{Registers, ByteReg};
 use crate::bus::Bus;
+use crate::types::Size;
 
 pub struct SM83 {
     reg: Registers,
@@ -17,20 +18,27 @@ impl SM83 {
     }
 
     fn step(&mut self) {
-        let op = self.bus.mem.read(self.pc as u8);
+        let op = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
         self.run_instruction(op);
     }
 
     fn run_instruction(&mut self, op: u8) {
         match op {
-            0x88 => self.adc(),
+            0x88 => self.adc_r(ByteReg::B),
+            0x89 => self.adc_r(ByteReg::C),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
 
-    fn adc(&mut self) {
-        self.reg.a += self.reg.c
+    fn adc_r(&mut self, reg: ByteReg) {
+        self.reg.setByte(ByteReg::A, self.reg.getByte(reg) + self.reg.getByte(ByteReg::C));
+        
+        self.reg.check_zero(self.reg.a);
+        self.reg.subtract(false);
+        self.reg.check_half_carry(self.reg.a as u16);
+        self.reg.check_carry(self.reg.a as u16);
     }
 }
 
@@ -39,23 +47,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_adc_a() {
+    fn test_adc_b() {
         let mut cpu = SM83::new();
-        cpu.reg.a = 0x01;
+        cpu.reg.b = 0x01;
         cpu.reg.c = 0x02;
         cpu.pc = 0xff;
-        cpu.bus.mem.write(0xff, 0x88);
+        cpu.bus.mem.write(Size::Byte, 0xff, 0x88);
 
         cpu.step();
 
-
         assert_eq!(cpu.reg.a, 0x03)
     }
-
-    // #[test]
-    // fn test_sum () {
-    //     let z80 = Z80::new();
-    //     let result = z80.sum(1, 2);
-    //     assert_eq!(result, 3);
-    // }
 }

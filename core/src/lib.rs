@@ -2,6 +2,7 @@ pub mod sm83;
 pub mod bus;
 pub mod memory;
 pub mod registers;
+pub mod types;
 
 pub use sm83::SM83;
 
