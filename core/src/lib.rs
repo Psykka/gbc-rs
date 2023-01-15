@@ -16,4 +16,8 @@ impl Core {
             sm83: SM83::new(),
         }
     }
+
+    pub fn step(&mut self) {
+        self.sm83.step();
+    }
 }

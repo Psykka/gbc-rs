@@ -11,18 +11,18 @@ impl Memory {
         }
     }
 
-    pub fn write(&mut self, size: Size, addr: u8, data: usize) {
+    pub fn write(&mut self, size: Size, addr: usize, data: usize) {
         match size {
             Size::Byte => self.write_byte(addr, data),
             Size::Word => self.write_word(addr, data)
         }
     }
 
-    fn write_byte(&mut self, addr: u8, data: usize) {
+    fn write_byte(&mut self, addr: usize, data: usize) {
         self.ram[addr as usize] = data as u8
     }
     
-    fn write_word(&mut self, addr: u8, data: usize) {
+    fn write_word(&mut self, addr: usize, data: usize) {
         self.ram[addr as usize] = (data & 0xff) as u8;
         self.ram[(addr + 1) as usize] = ((data >> 8) & 0xff) as u8;
     }
