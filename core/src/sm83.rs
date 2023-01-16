@@ -2,10 +2,26 @@ use crate::registers::{Registers, ByteReg, WordReg};
 use crate::bus::Bus;
 use crate::types::Size;
 
+macro_rules! check_all {
+    ($self:ident, $reg:ident, $val:expr, $subtract:expr) => {
+        $self.reg.check_zero($val);
+        $self.reg.subtract($subtract);
+        $self.reg.check_half_carry($val as u16);
+        $self.reg.check_carry($val as u16);
+    };
+}
+
+macro_rules! check_all_carrys {
+    ($self:ident, $reg:ident, $val:expr) => {
+        $self.reg.check_half_carry($val as u16);
+        $self.reg.check_carry($val as u16);
+    };
+}
+
 pub struct SM83 {
-    reg: Registers,
-    bus: Bus,
-    pc: u16
+    pub reg: Registers,
+    pub bus: Bus,
+    pub pc: u16
 }
 
 impl SM83 {
@@ -40,6 +56,30 @@ impl SM83 {
             // ADC A, n
             0xce => self.adc_n(),
 
+            // ADD A, r
+            0x80 => self.add_r(ByteReg::B),
+            0x81 => self.add_r(ByteReg::C),
+            0x82 => self.add_r(ByteReg::D),
+            0x83 => self.add_r(ByteReg::E),
+            0x84 => self.add_r(ByteReg::H),
+            0x85 => self.add_r(ByteReg::L),
+            0x87 => self.add_r(ByteReg::A),
+
+            // ADD A, (HL)
+            0x86 => self.add_hl(),
+
+            // ADD A, n
+            0xc6 => self.add_n(),
+
+            // ADD HL, r
+            0x09 => self.add_hl_rr(WordReg::BC),
+            0x19 => self.add_hl_rr(WordReg::DE),
+            0x29 => self.add_hl_rr(WordReg::HL),
+            0x39 => self.add_hl_rr(WordReg::SP),
+            
+            // ADD SP, n
+            0xe8 => self.add_sp_n(),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -47,10 +87,7 @@ impl SM83 {
     fn adc_r(&mut self, reg: ByteReg) {
         self.reg.setByte(ByteReg::A, self.reg.a + self.reg.getByte(reg) + self.reg.getByte(ByteReg::C));
 
-        self.reg.check_zero(self.reg.a);
-        self.reg.subtract(false);
-        self.reg.check_half_carry(self.reg.a as u16);
-        self.reg.check_carry(self.reg.a as u16);
+        check_all!(self, reg, self.reg.a, false);
     }
 
     fn adc_hl(&mut self) {
@@ -58,10 +95,7 @@ impl SM83 {
         let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
         self.reg.setByte(ByteReg::A, self.reg.a + data + self.reg.getByte(ByteReg::C));
 
-        self.reg.check_zero(self.reg.a);
-        self.reg.subtract(false);
-        self.reg.check_half_carry(self.reg.a as u16);
-        self.reg.check_carry(self.reg.a as u16);
+        check_all!(self, hl, self.reg.a, false);
     }
 
     fn adc_n(&mut self) {
@@ -69,75 +103,42 @@ impl SM83 {
         self.pc += 1;
         self.reg.setByte(ByteReg::A, self.reg.a + n + self.reg.getByte(ByteReg::C));
 
-        self.reg.check_zero(self.reg.a);
-        self.reg.subtract(false);
-        self.reg.check_half_carry(self.reg.a as u16);
-        self.reg.check_carry(self.reg.a as u16);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_adc_r() {
-        let mut cpu = SM83::new();
-        cpu.reg.b = 0x01;
-        cpu.reg.c = 0x02;
-        cpu.pc = 0xff;
-
-        cpu.bus.mem.write(Size::Byte, 0xff, 0x88);
-        cpu.bus.mem.write(Size::Byte, 0x100, 0x89);
-        cpu.bus.mem.write(Size::Byte, 0x101, 0x8f);
-
-        cpu.step();
-
-        assert_eq!(cpu.reg.a, 0x03);
-        assert_eq!(cpu.reg.f, 0x00);
-        assert_eq!(cpu.pc, 0x100);
-
-        cpu.step();
-
-        assert_eq!(cpu.reg.a, 0x07);
-        assert_eq!(cpu.reg.f, 0x00);
-        assert_eq!(cpu.pc, 0x101);
-
-        cpu.step();
-
-        assert_eq!(cpu.reg.a, 0x10);
-        assert_eq!(cpu.reg.f, 0x20);
-        assert_eq!(cpu.pc, 0x102);
+        check_all!(self, n, self.reg.a, false);
     }
 
-    #[test]
-    fn test_adc_hl() {
-        let mut cpu = SM83::new();
-        cpu.reg.setWord(WordReg::HL, 0x102);
-        cpu.pc = 0xff;
+    fn add_r(&mut self, reg: ByteReg) {
+        self.reg.setByte(ByteReg::A, self.reg.a + self.reg.getByte(reg));
 
-        cpu.bus.mem.write(Size::Byte, 0xff, 0x8e);
-        cpu.bus.mem.write(Size::Byte, 0x102, 0x01);
-
-        cpu.step();
-
-        assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x00);
-        assert_eq!(cpu.pc, 0x100);
+        check_all!(self, reg, self.reg.a, false);
     }
 
-    #[test]
-    fn test_adc_n() {
-        let mut cpu = SM83::new();
-        cpu.pc = 0xff;
+    fn add_hl(&mut self) {
+        let hl = self.reg.getWord(WordReg::HL);
+        let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
+        self.reg.setByte(ByteReg::A, self.reg.a + data);
 
-        cpu.bus.mem.write(Size::Byte, 0xff, 0xce);
-        cpu.bus.mem.write(Size::Byte, 0x100, 0x01);
+        check_all!(self, hl, self.reg.a, false);
+    }
 
-        cpu.step();
+    fn add_n(&mut self) {
+        let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+        self.reg.setByte(ByteReg::A, self.reg.a + n);
 
-        assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x00);
-        assert_eq!(cpu.pc, 0x101);
+        check_all!(self, n, self.reg.a, false);
+    }
+
+    fn add_hl_rr(&mut self, reg: WordReg) {
+        self.reg.setWord(WordReg::HL, self.reg.getWord(WordReg::HL) + self.reg.getWord(reg));
+
+        check_all!(self, reg, self.reg.getWord(WordReg::HL) as u8, false);
+    }
+
+    fn add_sp_n(&mut self) {
+        let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+        self.reg.setWord(WordReg::SP, self.reg.getWord(WordReg::SP) + n as u16);
+
+        check_all_carrys!(self, n, self.reg.getWord(WordReg::SP) as u8);
     }
 }
