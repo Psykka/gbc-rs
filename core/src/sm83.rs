@@ -85,15 +85,15 @@ impl SM83 {
     }
 
     fn adc_r(&mut self, reg: ByteReg) {
-        self.reg.setByte(ByteReg::A, self.reg.a + self.reg.getByte(reg) + self.reg.getByte(ByteReg::C));
+        self.reg.set_byte(ByteReg::A, self.reg.a + self.reg.get_byte(reg) + self.reg.get_byte(ByteReg::C));
 
         check_all!(self, reg, self.reg.a, false);
     }
 
     fn adc_hl(&mut self) {
-        let hl = self.reg.getWord(WordReg::HL);
+        let hl = self.reg.get_word(WordReg::HL);
         let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
-        self.reg.setByte(ByteReg::A, self.reg.a + data + self.reg.getByte(ByteReg::C));
+        self.reg.set_byte(ByteReg::A, self.reg.a + data + self.reg.get_byte(ByteReg::C));
 
         check_all!(self, hl, self.reg.a, false);
     }
@@ -101,21 +101,21 @@ impl SM83 {
     fn adc_n(&mut self) {
         let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
-        self.reg.setByte(ByteReg::A, self.reg.a + n + self.reg.getByte(ByteReg::C));
+        self.reg.set_byte(ByteReg::A, self.reg.a + n + self.reg.get_byte(ByteReg::C));
 
         check_all!(self, n, self.reg.a, false);
     }
 
     fn add_r(&mut self, reg: ByteReg) {
-        self.reg.setByte(ByteReg::A, self.reg.a + self.reg.getByte(reg));
+        self.reg.set_byte(ByteReg::A, self.reg.a + self.reg.get_byte(reg));
 
         check_all!(self, reg, self.reg.a, false);
     }
 
     fn add_hl(&mut self) {
-        let hl = self.reg.getWord(WordReg::HL);
+        let hl = self.reg.get_word(WordReg::HL);
         let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
-        self.reg.setByte(ByteReg::A, self.reg.a + data);
+        self.reg.set_byte(ByteReg::A, self.reg.a + data);
 
         check_all!(self, hl, self.reg.a, false);
     }
@@ -123,22 +123,22 @@ impl SM83 {
     fn add_n(&mut self) {
         let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
-        self.reg.setByte(ByteReg::A, self.reg.a + n);
+        self.reg.set_byte(ByteReg::A, self.reg.a + n);
 
         check_all!(self, n, self.reg.a, false);
     }
 
     fn add_hl_rr(&mut self, reg: WordReg) {
-        self.reg.setWord(WordReg::HL, self.reg.getWord(WordReg::HL) + self.reg.getWord(reg));
+        self.reg.set_word(WordReg::HL, self.reg.get_word(WordReg::HL) + self.reg.get_word(reg));
 
-        check_all!(self, reg, self.reg.getWord(WordReg::HL) as u8, false);
+        check_all!(self, reg, self.reg.get_word(WordReg::HL) as u8, false);
     }
 
     fn add_sp_n(&mut self) {
         let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
-        self.reg.setWord(WordReg::SP, self.reg.getWord(WordReg::SP) + n as u16);
+        self.reg.set_word(WordReg::SP, self.reg.get_word(WordReg::SP) + n as u16);
 
-        check_all_carrys!(self, n, self.reg.getWord(WordReg::SP) as u8);
+        check_all_carrys!(self, n, self.reg.get_word(WordReg::SP) as u8);
     }
 }

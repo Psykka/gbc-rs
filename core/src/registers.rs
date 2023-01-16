@@ -45,7 +45,7 @@ impl Registers {
         }
     }
 
-    pub fn getWord(&self, wreg: WordReg) -> u16 {
+    pub fn get_word(&self, wreg: WordReg) -> u16 {
         match wreg {
             WordReg::AF => ((self.a as u16) << 8) | (self.f as u16),
             WordReg::BC => ((self.b as u16) << 8) | (self.c as u16),
@@ -55,7 +55,7 @@ impl Registers {
         }
     }
 
-    pub fn setWord(&mut self, wreg: WordReg, data: u16) {
+    pub fn set_word(&mut self, wreg: WordReg, data: u16) {
         match wreg {
             WordReg::AF => {
                 self.a = (data >> 8) as u8;
@@ -77,7 +77,7 @@ impl Registers {
         }
     }
 
-    pub fn getByte(&self, breg: ByteReg) -> u8 {
+    pub fn get_byte(&self, breg: ByteReg) -> u8 {
         match breg {
             ByteReg::A => self.a,
             ByteReg::B => self.b,
@@ -90,7 +90,7 @@ impl Registers {
         }
     }
 
-    pub fn setByte(&mut self, breg: ByteReg, data: u8) {
+    pub fn set_byte(&mut self, breg: ByteReg, data: u8) {
         match breg {
             ByteReg::A => self.a = data,
             ByteReg::B => self.b = data,

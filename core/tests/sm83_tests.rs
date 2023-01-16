@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn test_adc_hl() {
         let mut cpu = SM83::new();
-        cpu.reg.setWord(WordReg::HL, 0x102);
+        cpu.reg.set_word(WordReg::HL, 0x102);
         cpu.pc = 0xff;
 
         cpu.bus.mem.write(Size::Byte, 0xff, 0x8e);
@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn test_add_hl() {
         let mut cpu = SM83::new();
-        cpu.reg.setWord(WordReg::HL, 0x102);
+        cpu.reg.set_word(WordReg::HL, 0x102);
         cpu.pc = 0xff;
 
         cpu.bus.mem.write(Size::Byte, 0xff, 0x86);
@@ -127,10 +127,10 @@ mod tests {
     #[test]
     fn test_add_hl_rr() {
         let mut cpu = SM83::new();
-        cpu.reg.setWord(WordReg::BC, 0x01);
-        cpu.reg.setWord(WordReg::DE, 0x02);
-        cpu.reg.setWord(WordReg::HL, 0x03);
-        cpu.reg.setWord(WordReg::SP, 0x04);
+        cpu.reg.set_word(WordReg::BC, 0x01);
+        cpu.reg.set_word(WordReg::DE, 0x02);
+        cpu.reg.set_word(WordReg::HL, 0x03);
+        cpu.reg.set_word(WordReg::SP, 0x04);
         cpu.pc = 0xff;
 
         cpu.bus.mem.write(Size::Byte, 0xff, 0x09);
@@ -140,25 +140,25 @@ mod tests {
 
         cpu.step();
 
-        assert_eq!(cpu.reg.getWord(WordReg::HL), 0x04);
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0x04);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x100);
 
         cpu.step();
 
-        assert_eq!(cpu.reg.getWord(WordReg::HL), 0x06);
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0x06);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x101);
 
         cpu.step();
 
-        assert_eq!(cpu.reg.getWord(WordReg::HL), 0xc);
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0xc);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
-        assert_eq!(cpu.reg.getWord(WordReg::HL), 0x10);
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0x10);
         assert_eq!(cpu.reg.f, 0x20);
         assert_eq!(cpu.pc, 0x103);
     }

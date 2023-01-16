@@ -5,15 +5,15 @@ mod tests {
     #[test]
     fn test_byte_register() {
         let mut regs = Registers::new();
-        regs.setByte(ByteReg::A, 0x01);
-        assert_eq!(regs.getByte(ByteReg::A), 0x01);
+        regs.set_byte(ByteReg::A, 0x01);
+        assert_eq!(regs.get_byte(ByteReg::A), 0x01);
     }
 
     #[test]
     fn test_word_register() {
         let mut regs = Registers::new();
-        regs.setWord(WordReg::AF, 0x0102);
-        assert_eq!(regs.getWord(WordReg::AF), 0x0102);
+        regs.set_word(WordReg::AF, 0x0102);
+        assert_eq!(regs.get_word(WordReg::AF), 0x0102);
     }
 
     #[test]
