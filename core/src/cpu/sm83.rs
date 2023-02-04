@@ -1,5 +1,5 @@
-use crate::registers::{Registers, ByteReg, WordReg};
 use crate::bus::Bus;
+use crate::cpu::registers::{ByteReg, Registers, WordReg};
 use crate::types::Size;
 
 macro_rules! check_all {
@@ -21,20 +21,20 @@ macro_rules! check_all_carrys {
 pub struct SM83 {
     pub reg: Registers,
     pub bus: Bus,
-    pub pc: u16
+    pub pc: u16,
 }
 
 impl SM83 {
     pub fn new() -> Self {
         Self {
             reg: Registers::new(),
-            bus: Bus::new(),
-            pc: 0,
+            bus: Bus::new(None),
+            pc: 0x100,
         }
     }
 
     pub fn step(&mut self) {
-        let op = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        let op = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
         self.run_instruction(op);
     }
@@ -76,7 +76,7 @@ impl SM83 {
             0x19 => self.add_hl_rr(WordReg::DE),
             0x29 => self.add_hl_rr(WordReg::HL),
             0x39 => self.add_hl_rr(WordReg::SP),
-            
+
             // ADD SP, n
             0xe8 => self.add_sp_n(),
 
@@ -85,43 +85,51 @@ impl SM83 {
     }
 
     fn adc_r(&mut self, reg: ByteReg) {
-        self.reg.set_byte(ByteReg::A, self.reg.a + self.reg.get_byte(reg) + self.reg.get_byte(ByteReg::C));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a + self.reg.get_byte(reg) + self.reg.get_byte(ByteReg::C),
+        );
 
         check_all!(self, reg, self.reg.a, false);
     }
 
     fn adc_hl(&mut self) {
         let hl = self.reg.get_word(WordReg::HL);
-        let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
-        self.reg.set_byte(ByteReg::A, self.reg.a + data + self.reg.get_byte(ByteReg::C));
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a + data + self.reg.get_byte(ByteReg::C),
+        );
 
         check_all!(self, hl, self.reg.a, false);
     }
 
     fn adc_n(&mut self) {
-        let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
-        self.reg.set_byte(ByteReg::A, self.reg.a + n + self.reg.get_byte(ByteReg::C));
+        self.reg
+            .set_byte(ByteReg::A, self.reg.a + n + self.reg.get_byte(ByteReg::C));
 
         check_all!(self, n, self.reg.a, false);
     }
 
     fn add_r(&mut self, reg: ByteReg) {
-        self.reg.set_byte(ByteReg::A, self.reg.a + self.reg.get_byte(reg));
+        self.reg
+            .set_byte(ByteReg::A, self.reg.a + self.reg.get_byte(reg));
 
         check_all!(self, reg, self.reg.a, false);
     }
 
     fn add_hl(&mut self) {
         let hl = self.reg.get_word(WordReg::HL);
-        let data = self.bus.mem.read(Size::Byte, hl as usize) as u8;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
         self.reg.set_byte(ByteReg::A, self.reg.a + data);
 
         check_all!(self, hl, self.reg.a, false);
     }
 
     fn add_n(&mut self) {
-        let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
         self.reg.set_byte(ByteReg::A, self.reg.a + n);
 
@@ -129,16 +137,26 @@ impl SM83 {
     }
 
     fn add_hl_rr(&mut self, reg: WordReg) {
-        self.reg.set_word(WordReg::HL, self.reg.get_word(WordReg::HL) + self.reg.get_word(reg));
+        self.reg.set_word(
+            WordReg::HL,
+            self.reg.get_word(WordReg::HL) + self.reg.get_word(reg),
+        );
 
         check_all!(self, reg, self.reg.get_word(WordReg::HL) as u8, false);
     }
 
     fn add_sp_n(&mut self) {
-        let n = self.bus.mem.read(Size::Byte, self.pc as usize) as u8;
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
-        self.reg.set_word(WordReg::SP, self.reg.get_word(WordReg::SP) + n as u16);
+        self.reg
+            .set_word(WordReg::SP, self.reg.get_word(WordReg::SP) + n as u16);
 
         check_all_carrys!(self, n, self.reg.get_word(WordReg::SP) as u8);
+    }
+}
+
+impl Default for SM83 {
+    fn default() -> Self {
+        Self::new()
     }
 }

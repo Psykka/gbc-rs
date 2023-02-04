@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use core::registers::{Registers, ByteReg, WordReg};
+    use core::cpu::registers::{ByteReg, Registers, WordReg};
 
     #[test]
     fn test_byte_register() {

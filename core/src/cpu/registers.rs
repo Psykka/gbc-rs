@@ -15,7 +15,7 @@ pub enum ByteReg {
     E,
     F,
     H,
-    L
+    L,
 }
 
 pub struct Registers {
@@ -60,19 +60,19 @@ impl Registers {
             WordReg::AF => {
                 self.a = (data >> 8) as u8;
                 self.f = data as u8;
-            },
+            }
             WordReg::BC => {
                 self.b = (data >> 8) as u8;
                 self.c = data as u8;
-            },
+            }
             WordReg::DE => {
                 self.d = (data >> 8) as u8;
                 self.e = data as u8;
-            },
+            }
             WordReg::HL => {
                 self.h = (data >> 8) as u8;
                 self.l = data as u8;
-            },
+            }
             WordReg::SP => self.sp = data,
         }
     }
@@ -133,5 +133,11 @@ impl Registers {
         } else {
             self.f &= !0x10;
         }
+    }
+}
+
+impl Default for Registers {
+    fn default() -> Self {
+        Self::new()
     }
 }
