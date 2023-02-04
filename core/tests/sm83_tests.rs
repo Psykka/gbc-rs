@@ -53,8 +53,8 @@ mod tests {
 
         let rom = create_rom(vec![
             0x8e, // ADC A, (HL)
-            0x00, // A = 0x00
-            0x01  // F = 0x01
+            0x00, // F = 0x00
+            0x01  // A = 0x01
         ]);
 
         cpu.bus.rom.load_new_rom(&rom).unwrap();
@@ -124,8 +124,8 @@ mod tests {
 
         let rom = create_rom(vec![
             0x86, // ADD A, (HL)
-            0x00, // A = 0x00
-            0x01  // F = 0x01
+            0x00, // F = 0x00
+            0x01  // A = 0x01
         ]);
 
         cpu.bus.rom.load_new_rom(&rom).unwrap();
