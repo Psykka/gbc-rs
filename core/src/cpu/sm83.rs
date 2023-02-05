@@ -146,6 +146,21 @@ impl SM83 {
             0x23 => self.inc_rr(WordReg::HL, 8),
             0x33 => self.inc_rr(WordReg::SP, 8),
 
+            // OR A, r
+            0xb7 => self.or_r(ByteReg::A, 4),
+            0xb0 => self.or_r(ByteReg::B, 4),
+            0xb1 => self.or_r(ByteReg::C, 4),
+            0xb2 => self.or_r(ByteReg::D, 4),
+            0xb3 => self.or_r(ByteReg::E, 4),
+            0xb4 => self.or_r(ByteReg::H, 4),
+            0xb5 => self.or_r(ByteReg::L, 4),
+
+            // OR A, (HL)
+            0xb6 => self.or_hl(8),
+
+            // OR A, n
+            0xf6 => self.or_n(8),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -355,6 +370,35 @@ impl SM83 {
         self.reg.set_word(reg, data);
 
         self.bus.tick(cycles);
+    }
+
+    fn or_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.reg
+            .set_byte(ByteReg::A, self.reg.a | self.reg.get_byte(reg));
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+    }
+
+    fn or_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a | data);
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+    }
+
+    fn or_n(&mut self, cycles: usize) {
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+        self.reg.set_byte(ByteReg::A, self.reg.a | n);
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
     }
 }
 
