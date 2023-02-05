@@ -223,4 +223,81 @@ mod tests {
         assert_eq!(cpu.bus.read(Size::Byte, WRAM_00 + 0x01), 0x02);
         assert_eq!(cpu.pc, 0x104);
     }
+
+    #[test]
+    fn test_swap_r() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x12;
+        cpu.reg.b = 0x34;
+        cpu.reg.c = 0x56;
+        cpu.reg.d = 0x00;
+
+        let rom = create_rom(vec![
+            0xcb, // PREFIX
+            0x37, // SWAP A
+            0xcb, // PREFIX
+            0x30, // SWAP B
+            0xcb, // PREFIX
+            0x31, // SWAP C
+            0xcb, // PREFIX
+            0x32, // SWAP D
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x21);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.b, 0x43);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x104);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.c, 0x65);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x106);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.d, 0x00);
+        assert_eq!(cpu.reg.f, ZERO);
+        assert_eq!(cpu.pc, 0x108);
+    }
+
+    #[test]
+    fn test_swap_hl() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::HL, WRAM_00 as u16 + 0x01);
+
+        let rom = create_rom(vec![
+            0xcb, // PREFIX
+            0x36, // SWAP (HL)
+            0xcb, // PREFIX
+            0x36, // SWAP (HL)
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.bus.write(Size::Byte, WRAM_00 + 0x01, 0x12);
+
+        cpu.step();
+
+        assert_eq!(cpu.bus.read(Size::Byte, WRAM_00 + 0x01), 0x21);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.bus.write(Size::Byte, WRAM_00 + 0x01, 0x00);
+
+        cpu.step();
+
+        assert_eq!(cpu.bus.read(Size::Byte, WRAM_00 + 0x01), 0x00);
+        assert_eq!(cpu.reg.f, ZERO);
+        assert_eq!(cpu.pc, 0x104);
+    }
 }

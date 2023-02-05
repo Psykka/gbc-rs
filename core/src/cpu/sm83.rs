@@ -512,6 +512,18 @@ impl SM83 {
             // SET b7, (HL)
             0xfe => self.set_hl(7, 16),
 
+            // SWAP r
+            0x37 => self.swap_r(ByteReg::A, 8),
+            0x30 => self.swap_r(ByteReg::B, 8),
+            0x31 => self.swap_r(ByteReg::C, 8),
+            0x32 => self.swap_r(ByteReg::D, 8),
+            0x33 => self.swap_r(ByteReg::E, 8),
+            0x34 => self.swap_r(ByteReg::H, 8),
+            0x35 => self.swap_r(ByteReg::L, 8),
+
+            // SWAP (HL)
+            0x36 => self.swap_hl(16),
+
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
     }
@@ -954,6 +966,32 @@ impl SM83 {
         self.bus.tick(cycles);
 
         self.bus.write(Size::Byte, hl, (data | (1 << bit)) as usize);
+    }
+
+    fn swap_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(reg);
+        let swapped = (data << 4) | (data >> 4);
+
+        self.reg.set_byte(reg, swapped);
+
+        self.reg.set_flags(0);
+        self.reg.check_zero(swapped);
+    }
+
+    fn swap_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        let swapped = (data << 4) | (data >> 4);
+
+        self.bus.write(Size::Byte, hl, swapped as usize);
+
+        self.reg.set_flags(0);
+        self.reg.check_zero(swapped);
     }
 }
 
