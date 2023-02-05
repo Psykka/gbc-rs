@@ -630,4 +630,44 @@ mod tests {
         assert_eq!(cpu.reg.f, 0x80);
         assert_eq!(cpu.pc, 0x105);
     }
+
+    #[test]
+    fn test_or_hl() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::HL, 0x102);
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0xb6, // OR (HL)
+            0x00, // F = 0x00
+            0x01  // A = 0x01
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x01);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_or_n() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0xf6, // OR n
+            0x01  // A = 0x01
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x01);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+    }
 }
