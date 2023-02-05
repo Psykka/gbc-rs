@@ -1,3 +1,4 @@
+#[derive(Clone, Copy)]
 pub enum WordReg {
     AF,
     BC,
@@ -6,7 +7,7 @@ pub enum WordReg {
     SP,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy)]
 pub enum ByteReg {
     A,
     B,

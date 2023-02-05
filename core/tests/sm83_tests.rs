@@ -363,4 +363,107 @@ mod tests {
         assert_eq!(cpu.reg.f, 0xc0);
         assert_eq!(cpu.pc, 0x102);
     }
+
+    #[test]
+    fn test_dec_r() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+        cpu.reg.b = 0x01;
+        cpu.reg.c = 0x02;
+        cpu.reg.d = 0x00;
+
+        let rom = create_rom(vec![
+            0x3d, // DEC A
+            0x05, // DEC B
+            0x0d, // DEC C
+            0x15, // DEC D
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x00);
+        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.pc, 0x101);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.b, 0x00);
+        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.c, 0x01);
+        assert_eq!(cpu.reg.f, 0x40);
+        assert_eq!(cpu.pc, 0x103);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.d, 0xff);
+        assert_eq!(cpu.reg.f, 0x60);
+        assert_eq!(cpu.pc, 0x104);
+    }
+
+    #[test]
+    fn test_dec_hl() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::HL, 0x102);
+
+        let rom = create_rom(vec![
+            0x35, // DEC (HL)
+            0x00, // F = 0x00
+            0x01  // A = 0x01
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.f, 0x60);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_dec_rr() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::BC, 0x102);
+        cpu.reg.set_word(WordReg::DE, 0x102);
+        cpu.reg.set_word(WordReg::HL, 0x102);
+        cpu.reg.set_word(WordReg::SP, 0x100);
+
+        let rom = create_rom(vec![
+            0x0b, // DEC BC
+            0x1b, // DEC DE
+            0x2b, // DEC HL
+            0x3b  // DEC SP
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::BC), 0x101);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x101);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::DE), 0x101);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0x101);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x103);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::SP), 0xff);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x104);
+    }
 }

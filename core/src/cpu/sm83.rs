@@ -110,6 +110,24 @@ impl SM83 {
             // CP A, n
             0xfe => self.cp_n(8),
 
+            // DEC r
+            0x3d => self.dec_r(ByteReg::A, 4),
+            0x05 => self.dec_r(ByteReg::B, 4),
+            0x0d => self.dec_r(ByteReg::C, 4),
+            0x15 => self.dec_r(ByteReg::D, 4),
+            0x1d => self.dec_r(ByteReg::E, 4),
+            0x25 => self.dec_r(ByteReg::H, 4),
+            0x2d => self.dec_r(ByteReg::L, 4),
+
+            // DEC (HL)
+            0x35 => self.dec_hl(12),
+
+            // DEC rr
+            0x0b => self.dec_rr(WordReg::BC, 8),
+            0x1b => self.dec_rr(WordReg::DE, 8),
+            0x2b => self.dec_rr(WordReg::HL, 8),
+            0x3b => self.dec_rr(WordReg::SP, 8),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -257,6 +275,36 @@ impl SM83 {
         let a = self.reg.a;
 
         check_all!(self, n, a.wrapping_sub(n), true);
+
+        self.bus.tick(cycles);
+    }
+
+    fn dec_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.reg
+            .set_byte(reg, self.reg.get_byte(reg).wrapping_sub(1));
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.get_byte(reg));
+        self.reg.subtract(true);
+        self.reg.check_half_carry(self.reg.get_byte(reg) as u16);
+    }
+
+    fn dec_hl(&mut self, cycles: usize) {
+        self.reg
+            .set_word(WordReg::HL, self.reg.get_word(WordReg::HL).wrapping_sub(1));
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.get_word(WordReg::HL) as u8);
+        self.reg.subtract(true);
+        self.reg.check_half_carry(self.reg.get_word(WordReg::HL));
+    }
+
+    fn dec_rr(&mut self, reg: WordReg, cycles: usize) {
+        let data = self.reg.get_word(reg).wrapping_sub(1);
+
+        self.reg.set_word(reg, data);
 
         self.bus.tick(cycles);
     }
