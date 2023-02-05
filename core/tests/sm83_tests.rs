@@ -466,4 +466,115 @@ mod tests {
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x104);
     }
+
+    #[test]
+    fn test_inc_r() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+        cpu.reg.b = 0x01;
+        cpu.reg.c = 0x02;
+        cpu.reg.d = 0x00;
+        cpu.reg.e = 0xff;
+
+        let rom = create_rom(vec![
+            0x3c, // INC A
+            0x04, // INC B
+            0x0c, // INC C
+            0x14, // INC D
+            0x1c, // INC E
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x02);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x101);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.b, 0x02);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.c, 0x03);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x103);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.d, 0x01);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x104);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.e, 0x00);
+        assert_eq!(cpu.reg.f, 0x80);
+        assert_eq!(cpu.pc, 0x105);
+    }
+
+    #[test]
+    fn test_inc_hl() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::HL, 0x102);
+
+        let rom = create_rom(vec![
+            0x34, // INC (HL)
+            0x00, // F = 0x00
+            0x01  // A = 0x01
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.f, 0x20);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_inc_rr() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::BC, 0x102);
+        cpu.reg.set_word(WordReg::DE, 0x102);
+        cpu.reg.set_word(WordReg::HL, 0x102);
+        cpu.reg.set_word(WordReg::SP, 0xff);
+
+        let rom = create_rom(vec![
+            0x03, // INC BC
+            0x13, // INC DE
+            0x23, // INC HL
+            0x33  // INC SP
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::BC), 0x103);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x101);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::DE), 0x103);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::HL), 0x103);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x103);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.get_word(WordReg::SP), 0x100);
+        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.pc, 0x104);
+    }
 }
