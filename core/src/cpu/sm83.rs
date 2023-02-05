@@ -80,6 +80,22 @@ impl SM83 {
             // ADD SP, n
             0xe8 => self.add_sp_n(16),
 
+            // AND A, r
+            0xa0 => self.and_r(ByteReg::B, 4),
+            0xa1 => self.and_r(ByteReg::C, 4),
+            0xa2 => self.and_r(ByteReg::D, 4),
+            0xa3 => self.and_r(ByteReg::E, 4),
+            0xa4 => self.and_r(ByteReg::H, 4),
+            0xa5 => self.and_r(ByteReg::L, 4),
+            0xa7 => self.and_r(ByteReg::A, 4),
+
+            // AND A, (HL)
+            0xa6 => self.and_hl(8),
+
+            // AND A, n
+            0xe6 => self.and_n(8),
+
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -168,6 +184,38 @@ impl SM83 {
         self.bus.tick(cycles);
 
         check_all_carrys!(self, n, self.reg.get_word(WordReg::SP) as u8);
+    }
+
+    fn and_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.reg
+            .set_byte(ByteReg::A, self.reg.a & self.reg.get_byte(reg));
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+        self.reg.check_half_carry(self.reg.a as u16);
+    }
+
+    fn and_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a & data);
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+        self.reg.check_half_carry(self.reg.a as u16);
+    }
+
+    fn and_n(&mut self, cycles: usize) {
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+        self.reg.set_byte(ByteReg::A, self.reg.a & n);
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+        self.reg.check_half_carry(self.reg.a as u16);
     }
 }
 
