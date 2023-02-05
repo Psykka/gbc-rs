@@ -625,4 +625,76 @@ mod tests {
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x104);
     }
+
+    #[test]
+    fn test_rla() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0x17, // RLA
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x02);
+        assert_eq!(cpu.reg.f, 0);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_rlca() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0x07, // RLCA
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x02);
+        assert_eq!(cpu.reg.f, 0);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_rra() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0x1f, // RRA
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x00);
+        assert_eq!(cpu.reg.f, 0);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_rrca() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+
+        let rom = create_rom(vec![
+            0x0f, // RRCA
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x00);
+        assert_eq!(cpu.reg.f, 0);
+        assert_eq!(cpu.pc, 0x101);
+    }
 }

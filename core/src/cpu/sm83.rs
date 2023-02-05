@@ -224,16 +224,16 @@ impl SM83 {
             0xcb => self.prefix_cb(),
 
             // RLA
-            // 0x17 => self.rla(4),
+            0x17 => self.rla(4),
 
             // RLCA
-            // 0x07 => self.rlca(4),
+            0x07 => self.rlca(4),
 
             // RRA
-            // 0x1f => self.rra(4),
+            0x1f => self.rra(4),
 
             // RRCA
-            // 0x0f => self.rrca(4),
+            0x0f => self.rrca(4),
 
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
@@ -1266,6 +1266,56 @@ impl SM83 {
         self.bus.write(Size::Byte, hl, result as usize);
 
         clear_flag_and_check_zero_carry!(self, hl, result as u8);
+    }
+
+    fn rla(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(ByteReg::A) as u16;
+        let result: u16 = data << 1;
+
+        self.reg.set_byte(ByteReg::A, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+    }
+
+    fn rlca(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(ByteReg::A);
+        let result: u16 = (data << 1) as u16;
+
+        self.reg.set_byte(ByteReg::A, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+    }
+
+    fn rra(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(ByteReg::A);
+        let result: u16 = ((data >> 1) | (self.reg.get_carry() as u8) << 7) as u16;
+
+        self.reg.set_byte(ByteReg::A, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+    }
+
+    fn rrca(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(ByteReg::A);
+        let result: u16 = ((data >> 1) | (data & 0x80)) as u16;
+
+        println!("{} {}", data, result);
+
+        self.reg.set_byte(ByteReg::A, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
     }
 }
 
