@@ -191,6 +191,21 @@ impl SM83 {
             // SUB A, n
             0xd6 => self.sub_n(8),
 
+            // XOR A, r
+            0xaf => self.xor_r(ByteReg::A, 4),
+            0xa8 => self.xor_r(ByteReg::B, 4),
+            0xa9 => self.xor_r(ByteReg::C, 4),
+            0xaa => self.xor_r(ByteReg::D, 4),
+            0xab => self.xor_r(ByteReg::E, 4),
+            0xac => self.xor_r(ByteReg::H, 4),
+            0xad => self.xor_r(ByteReg::L, 4),
+
+            // XOR A, (HL)
+            0xae => self.xor_hl(8),
+
+            // XOR A, n
+            0xee => self.xor_n(8),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -523,6 +538,30 @@ impl SM83 {
         self.bus.tick(cycles);
 
         check_all!(self, n, self.reg.a, true);
+    }
+
+    fn xor_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a ^ self.reg.get_byte(reg));
+    }
+
+    fn xor_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a ^ data);
+    }
+
+    fn xor_n(&mut self, cycles: usize) {
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a ^ n);
     }
 }
 
