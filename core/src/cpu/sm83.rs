@@ -215,6 +215,18 @@ impl SM83 {
             // PREFIX CB
             0xcb => self.prefix_cb(),
 
+            // RLA
+            // 0x17 => self.rla(4),
+
+            // RLCA
+            // 0x07 => self.rlca(4),
+
+            // RRA
+            // 0x1f => self.rra(4),
+
+            // RRCA
+            // 0x0f => self.rrca(4),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -523,6 +535,90 @@ impl SM83 {
 
             // SWAP (HL)
             0x36 => self.swap_hl(16),
+
+            // RL r
+            0x17 => self.rl_r(ByteReg::A, 8),
+            0x10 => self.rl_r(ByteReg::B, 8),
+            0x11 => self.rl_r(ByteReg::C, 8),
+            0x12 => self.rl_r(ByteReg::D, 8),
+            0x13 => self.rl_r(ByteReg::E, 8),
+            0x14 => self.rl_r(ByteReg::H, 8),
+            0x15 => self.rl_r(ByteReg::L, 8),
+
+            // RL (HL)
+            0x16 => self.rl_hl(16),
+
+            // // RLC r
+            // 0x07 => self.rlc_r(ByteReg::A, 8),
+            // 0x00 => self.rlc_r(ByteReg::B, 8),
+            // 0x01 => self.rlc_r(ByteReg::C, 8),
+            // 0x02 => self.rlc_r(ByteReg::D, 8),
+            // 0x03 => self.rlc_r(ByteReg::E, 8),
+            // 0x04 => self.rlc_r(ByteReg::H, 8),
+            // 0x05 => self.rlc_r(ByteReg::L, 8),
+
+            // // RLC (HL)
+            // 0x06 => self.rlc_hl(16),
+
+            // // RR r
+            // 0x1f => self.rr_r(ByteReg::A, 8),
+            // 0x18 => self.rr_r(ByteReg::B, 8),
+            // 0x19 => self.rr_r(ByteReg::C, 8),
+            // 0x1a => self.rr_r(ByteReg::D, 8),
+            // 0x1b => self.rr_r(ByteReg::E, 8),
+            // 0x1c => self.rr_r(ByteReg::H, 8),
+            // 0x1d => self.rr_r(ByteReg::L, 8),
+
+            // // RR (HL)
+            // 0x1e => self.rr_hl(16),
+
+            // // RRC r
+            // 0x0f => self.rrc_r(ByteReg::A, 8),
+            // 0x08 => self.rrc_r(ByteReg::B, 8),
+            // 0x09 => self.rrc_r(ByteReg::C, 8),
+            // 0x0a => self.rrc_r(ByteReg::D, 8),
+            // 0x0b => self.rrc_r(ByteReg::E, 8),
+            // 0x0c => self.rrc_r(ByteReg::H, 8),
+            // 0x0d => self.rrc_r(ByteReg::L, 8),
+
+            // // RRC (HL)
+            // 0x0e => self.rrc_hl(16),
+
+            // // SLA r
+            // 0x27 => self.sla_r(ByteReg::A, 8),
+            // 0x20 => self.sla_r(ByteReg::B, 8),
+            // 0x21 => self.sla_r(ByteReg::C, 8),
+            // 0x22 => self.sla_r(ByteReg::D, 8),
+            // 0x23 => self.sla_r(ByteReg::E, 8),
+            // 0x24 => self.sla_r(ByteReg::H, 8),
+            // 0x25 => self.sla_r(ByteReg::L, 8),
+
+            // // SLA (HL)
+            // 0x26 => self.sla_hl(16),
+
+            // // SRA r
+            // 0x2f => self.sra_r(ByteReg::A, 8),
+            // 0x28 => self.sra_r(ByteReg::B, 8),
+            // 0x29 => self.sra_r(ByteReg::C, 8),
+            // 0x2a => self.sra_r(ByteReg::D, 8),
+            // 0x2b => self.sra_r(ByteReg::E, 8),
+            // 0x2c => self.sra_r(ByteReg::H, 8),
+            // 0x2d => self.sra_r(ByteReg::L, 8),
+
+            // // SRA (HL)
+            // 0x2e => self.sra_hl(16),
+
+            // // SRL r
+            // 0x3f => self.srl_r(ByteReg::A, 8),
+            // 0x38 => self.srl_r(ByteReg::B, 8),
+            // 0x39 => self.srl_r(ByteReg::C, 8),
+            // 0x3a => self.srl_r(ByteReg::D, 8),
+            // 0x3b => self.srl_r(ByteReg::E, 8),
+            // 0x3c => self.srl_r(ByteReg::H, 8),
+            // 0x3d => self.srl_r(ByteReg::L, 8),
+
+            // // SRL (HL)
+            // 0x3e => self.srl_hl(16),
 
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
@@ -992,6 +1088,38 @@ impl SM83 {
 
         self.reg.set_flags(0);
         self.reg.check_zero(swapped);
+    }
+
+    fn rl_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(reg);
+        let carry = self.reg.get_carry() as u8;
+
+        let result: u16 = ((data << 1) | carry) as u16;
+
+        self.reg.set_byte(reg, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+        self.reg.check_zero(self.reg.get_byte(reg));
+    }
+
+    fn rl_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        let carry = self.reg.get_carry() as u8;
+
+        let result: u16 = ((data << 1) | carry) as u16;
+
+        self.bus.write(Size::Byte, hl, result as usize);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+        self.reg.check_zero(result as u8);
     }
 }
 
