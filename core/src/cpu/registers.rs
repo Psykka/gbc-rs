@@ -135,6 +135,10 @@ impl Registers {
             self.f &= !0x10;
         }
     }
+
+    pub fn get_carry(&self) -> bool {
+        self.f & 0x10 != 0
+    }
 }
 
 impl Default for Registers {

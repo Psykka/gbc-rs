@@ -161,6 +161,21 @@ impl SM83 {
             // OR A, n
             0xf6 => self.or_n(8),
 
+            // SBC A, r
+            0x9f => self.sbc_r_a(4),
+            0x98 => self.sbc_r(ByteReg::B, 4),
+            0x99 => self.sbc_r(ByteReg::C, 4),
+            0x9a => self.sbc_r(ByteReg::D, 4),
+            0x9b => self.sbc_r(ByteReg::E, 4),
+            0x9c => self.sbc_r(ByteReg::H, 4),
+            0x9d => self.sbc_r(ByteReg::L, 4),
+
+            // SBC A, (HL)
+            0x9e => self.sbc_hl(8),
+
+            // SBC A, n
+            0xde => self.sbc_n(8),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -168,7 +183,7 @@ impl SM83 {
     fn adc_r(&mut self, reg: ByteReg, cycles: usize) {
         self.reg.set_byte(
             ByteReg::A,
-            self.reg.a + self.reg.get_byte(reg) + self.reg.get_byte(ByteReg::C),
+            self.reg.a + self.reg.get_byte(reg) + self.reg.get_carry() as u8,
         );
 
         self.bus.tick(cycles);
@@ -181,7 +196,7 @@ impl SM83 {
         let data = self.bus.read(Size::Byte, hl as usize) as u8;
         self.reg.set_byte(
             ByteReg::A,
-            self.reg.a + data + self.reg.get_byte(ByteReg::C),
+            self.reg.a + data + self.reg.get_carry() as u8,
         );
 
         self.bus.tick(cycles);
@@ -193,7 +208,7 @@ impl SM83 {
         let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
         self.reg
-            .set_byte(ByteReg::A, self.reg.a + n + self.reg.get_byte(ByteReg::C));
+            .set_byte(ByteReg::A, self.reg.a + n + self.reg.get_carry() as u8,);
 
         self.bus.tick(cycles);
 
