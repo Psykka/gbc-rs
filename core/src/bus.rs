@@ -14,6 +14,7 @@ const WRAM_01_END: usize = 0xDFFF;
 pub struct Bus {
     pub mem: Memory,
     pub rom: Cartridge,
+    pub cycles: usize,
 }
 
 impl Bus {
@@ -21,6 +22,7 @@ impl Bus {
         Self {
             mem: Memory::default(),
             rom: cart.unwrap_or_default(),
+            cycles: 0,
         }
     }
 
@@ -41,6 +43,18 @@ impl Bus {
             WRAM_00 ..= WRAM_00_END => self.mem.write(size, addr - WRAM_00, data),
             WRAM_01 ..= WRAM_01_END => self.rom.ram.write(size, addr - WRAM_01, data),
             _ => println!("Ignored write to address: {:04X}", addr),
+        }
+    }
+
+    pub fn tick(&mut self, times: usize) {
+        if times <= 0 {
+            return;
+        }
+
+        for _ in 0..times {
+            self.cycles += 1;
+            println!("Tick! {}", self.cycles);
+            // All components who need to be ticked
         }
     }
 }
