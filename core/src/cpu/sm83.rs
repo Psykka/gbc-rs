@@ -416,6 +416,102 @@ impl SM83 {
             // RES b7, (HL)
             0xbe => self.res_hl(7, 16),
 
+            // SET b0, r
+            0xc7 => self.set_r(0, ByteReg::A, 8),
+            0xc0 => self.set_r(0, ByteReg::B, 8),
+            0xc1 => self.set_r(0, ByteReg::C, 8),
+            0xc2 => self.set_r(0, ByteReg::D, 8),
+            0xc3 => self.set_r(0, ByteReg::E, 8),
+            0xc4 => self.set_r(0, ByteReg::H, 8),
+            0xc5 => self.set_r(0, ByteReg::L, 8),
+
+            // SET b0, (HL)
+            0xc6 => self.set_hl(0, 16),
+
+            // SET b1, r
+            0xcf => self.set_r(1, ByteReg::A, 8),
+            0xc8 => self.set_r(1, ByteReg::B, 8),
+            0xc9 => self.set_r(1, ByteReg::C, 8),
+            0xca => self.set_r(1, ByteReg::D, 8),
+            0xcb => self.set_r(1, ByteReg::E, 8),
+            0xcc => self.set_r(1, ByteReg::H, 8),
+            0xcd => self.set_r(1, ByteReg::L, 8),
+
+            // SET b1, (HL)
+            0xce => self.set_hl(1, 16),
+
+            // SET b2, r
+            0xd7 => self.set_r(2, ByteReg::A, 8),
+            0xd0 => self.set_r(2, ByteReg::B, 8),
+            0xd1 => self.set_r(2, ByteReg::C, 8),
+            0xd2 => self.set_r(2, ByteReg::D, 8),
+            0xd3 => self.set_r(2, ByteReg::E, 8),
+            0xd4 => self.set_r(2, ByteReg::H, 8),
+            0xd5 => self.set_r(2, ByteReg::L, 8),
+
+            // SET b2, (HL)
+            0xd6 => self.set_hl(2, 16),
+
+            // SET b3, r
+            0xdf => self.set_r(3, ByteReg::A, 8),
+            0xd8 => self.set_r(3, ByteReg::B, 8),
+            0xd9 => self.set_r(3, ByteReg::C, 8),
+            0xda => self.set_r(3, ByteReg::D, 8),
+            0xdb => self.set_r(3, ByteReg::E, 8),
+            0xdc => self.set_r(3, ByteReg::H, 8),
+            0xdd => self.set_r(3, ByteReg::L, 8),
+
+            // SET b3, (HL)
+            0xde => self.set_hl(3, 16),
+
+            // SET b4, r
+            0xe7 => self.set_r(4, ByteReg::A, 8),
+            0xe0 => self.set_r(4, ByteReg::B, 8),
+            0xe1 => self.set_r(4, ByteReg::C, 8),
+            0xe2 => self.set_r(4, ByteReg::D, 8),
+            0xe3 => self.set_r(4, ByteReg::E, 8),
+            0xe4 => self.set_r(4, ByteReg::H, 8),
+            0xe5 => self.set_r(4, ByteReg::L, 8),
+
+            // SET b4, (HL)
+            0xe6 => self.set_hl(4, 16),
+
+            // SET b5, r
+            0xef => self.set_r(5, ByteReg::A, 8),
+            0xe8 => self.set_r(5, ByteReg::B, 8),
+            0xe9 => self.set_r(5, ByteReg::C, 8),
+            0xea => self.set_r(5, ByteReg::D, 8),
+            0xeb => self.set_r(5, ByteReg::E, 8),
+            0xec => self.set_r(5, ByteReg::H, 8),
+            0xed => self.set_r(5, ByteReg::L, 8),
+
+            // SET b5, (HL)
+            0xee => self.set_hl(5, 16),
+
+            // SET b6, r
+            0xf7 => self.set_r(6, ByteReg::A, 8),
+            0xf0 => self.set_r(6, ByteReg::B, 8),
+            0xf1 => self.set_r(6, ByteReg::C, 8),
+            0xf2 => self.set_r(6, ByteReg::D, 8),
+            0xf3 => self.set_r(6, ByteReg::E, 8),
+            0xf4 => self.set_r(6, ByteReg::H, 8),
+            0xf5 => self.set_r(6, ByteReg::L, 8),
+
+            // SET b6, (HL)
+            0xf6 => self.set_hl(6, 16),
+
+            // SET b7, r
+            0xff => self.set_r(7, ByteReg::A, 8),
+            0xf8 => self.set_r(7, ByteReg::B, 8),
+            0xf9 => self.set_r(7, ByteReg::C, 8),
+            0xfa => self.set_r(7, ByteReg::D, 8),
+            0xfb => self.set_r(7, ByteReg::E, 8),
+            0xfc => self.set_r(7, ByteReg::H, 8),
+            0xfd => self.set_r(7, ByteReg::L, 8),
+
+            // SET b7, (HL)
+            0xfe => self.set_hl(7, 16),
+
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
     }
@@ -843,6 +939,21 @@ impl SM83 {
         self.bus.tick(cycles);
 
         self.bus.write(Size::Byte, hl, (data & !(1 << bit)) as usize);
+    }
+
+    fn set_r(&mut self, bit: u8, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        self.reg.set_byte(reg, self.reg.get_byte(reg) | (1 << bit));
+    }
+
+    fn set_hl(&mut self, bit: u8, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        self.bus.write(Size::Byte, hl, (data | (1 << bit)) as usize);
     }
 }
 
