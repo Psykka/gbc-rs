@@ -18,12 +18,19 @@ macro_rules! check_all_carrys {
     };
 }
 
+const ZERO: u8 = 0b1000_0000;
+const SUBTRACT: u8 = 0b0100_0000;
+const HALF_CARRY: u8 = 0b0010_0000;
+const CARRY: u8 = 0b0001_0000;
+
 pub struct SM83 {
     pub reg: Registers,
     pub bus: Bus,
     pub pc: u16,
 }
 
+
+// TODO: remove self.reg.substract, set with self.reg.set_flags
 impl SM83 {
     pub fn new() -> Self {
         Self {
@@ -71,7 +78,7 @@ impl SM83 {
             // ADD A, n
             0xc6 => self.add_n(8),
 
-            // ADD HL, r
+            // ADD HL, rr
             0x09 => self.add_hl_rr(WordReg::BC, 8),
             0x19 => self.add_hl_rr(WordReg::DE, 8),
             0x29 => self.add_hl_rr(WordReg::HL, 8),
@@ -192,7 +199,7 @@ impl SM83 {
             0xd6 => self.sub_n(8),
 
             // XOR A, r
-            0xaf => self.xor_r(ByteReg::A, 4),
+            0xaf => self.xor_r_a(4),
             0xa8 => self.xor_r(ByteReg::B, 4),
             0xa9 => self.xor_r(ByteReg::C, 4),
             0xaa => self.xor_r(ByteReg::D, 4),
@@ -206,7 +213,21 @@ impl SM83 {
             // XOR A, n
             0xee => self.xor_n(8),
 
+            // PREFIX CB
+            0xcb => self.prefix_cb(),
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
+        }
+    }
+
+    fn prefix_cb(&mut self) {
+        let op = self.bus.read(Size::Byte, self.pc as usize);
+        self.pc += 1;
+
+        match op {
+            // BIT b, r
+            0x47 => todo!(),
+            _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
     }
 
@@ -282,7 +303,9 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
-        check_all!(self, reg, self.reg.get_word(WordReg::HL) as u8, false);
+        self.reg.subtract(false);
+        self.reg.check_half_carry(self.reg.get_word(WordReg::HL) as u16);
+        self.reg.check_carry(self.reg.get_word(WordReg::HL) as u16);
     }
 
     fn add_sp_n(&mut self, cycles: usize) {
@@ -293,6 +316,7 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(0);
         check_all_carrys!(self, n, self.reg.get_word(WordReg::SP) as u8);
     }
 
@@ -302,8 +326,8 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
         self.reg.check_zero(self.reg.a);
-        self.reg.check_half_carry(self.reg.a as u16);
     }
 
     fn and_hl(&mut self, cycles: usize) {
@@ -313,8 +337,8 @@ impl SM83 {
         self.reg.set_byte(ByteReg::A, self.reg.a & data);
         self.bus.tick(cycles);
 
+        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
         self.reg.check_zero(self.reg.a);
-        self.reg.check_half_carry(self.reg.a as u16);
     }
 
     fn and_n(&mut self, cycles: usize) {
@@ -324,15 +348,16 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
         self.reg.check_zero(self.reg.a);
-        self.reg.check_half_carry(self.reg.a as u16);
     }
 
     fn cp_r_a(&mut self, cycles: usize) {
         let a = self.reg.a;
 
         self.reg.check_zero(a.wrapping_sub(a));
-        self.reg.subtract(true);
+
+        self.reg.set_flags(ZERO | SUBTRACT & !(HALF_CARRY | CARRY));
 
         self.bus.tick(cycles);
     }
@@ -432,6 +457,7 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(0);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -442,6 +468,7 @@ impl SM83 {
         self.reg.set_byte(ByteReg::A, self.reg.a | data);
         self.bus.tick(cycles);
 
+        self.reg.set_flags(0);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -452,6 +479,7 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(0);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -506,8 +534,8 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
+        self.reg.set_flags(ZERO | SUBTRACT & !(HALF_CARRY | CARRY));
         self.reg.check_zero(self.reg.a);
-        self.reg.subtract(true);
     }
 
     fn sub_r(&mut self, reg: ByteReg, cycles: usize) {
@@ -538,6 +566,12 @@ impl SM83 {
         self.bus.tick(cycles);
 
         check_all!(self, n, self.reg.a, true);
+    }
+
+    fn xor_r_a(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        self.reg.set_flags(ZERO);
     }
 
     fn xor_r(&mut self, reg: ByteReg, cycles: usize) {

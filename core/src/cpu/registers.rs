@@ -139,6 +139,10 @@ impl Registers {
     pub fn get_carry(&self) -> bool {
         self.f & 0x10 != 0
     }
+
+    pub fn set_flags(&mut self, data: u8) {
+        self.f = data;
+    }
 }
 
 impl Default for Registers {

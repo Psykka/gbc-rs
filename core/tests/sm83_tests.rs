@@ -239,19 +239,19 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.reg.f, HALF_CARRY);
         assert_eq!(cpu.pc, 0x101);
 
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, ZERO);
+        assert_eq!(cpu.reg.f, ZERO | HALF_CARRY);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, ZERO);
+        assert_eq!(cpu.reg.f, ZERO | HALF_CARRY);
         assert_eq!(cpu.pc, 0x103);
     }
 
@@ -272,7 +272,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.reg.f, HALF_CARRY);
         assert_eq!(cpu.pc, 0x101);
     }
 
@@ -291,7 +291,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x00);
+        assert_eq!(cpu.reg.f, HALF_CARRY);
         assert_eq!(cpu.pc, 0x102);
     }
 
@@ -325,7 +325,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, ZERO | SUB | HALF_CARRY);
+        assert_eq!(cpu.reg.f, ZERO | SUB); // cp A, A flags = 0b1100_0000
         assert_eq!(cpu.pc, 0x103);
     }
 
@@ -878,6 +878,7 @@ mod tests {
             0xa8, // XOR A, B
             0xa9, // XOR A, C
             0xab, // XOR A, E
+            0xaf, // XOR A, A
         ]);
 
         cpu.bus.rom.load_new_rom(&rom).unwrap();
@@ -899,6 +900,14 @@ mod tests {
         assert_eq!(cpu.reg.a, 0x01);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x103);
+
+        cpu.reg.a = 0x01;
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x01);
+        assert_eq!(cpu.reg.f, ZERO);
+        assert_eq!(cpu.pc, 0x104);
     }
 
     #[test]
