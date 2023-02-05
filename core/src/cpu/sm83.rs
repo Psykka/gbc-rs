@@ -96,7 +96,7 @@ impl SM83 {
             0xe6 => self.and_n(8),
 
             // CP A, r
-            0xbf => self.cp_r(ByteReg::A, 4),
+            0xbf => self.cp_r_a(4),
             0xb8 => self.cp_r(ByteReg::B, 4),
             0xb9 => self.cp_r(ByteReg::C, 4),
             0xba => self.cp_r(ByteReg::D, 4),
@@ -175,6 +175,21 @@ impl SM83 {
 
             // SBC A, n
             0xde => self.sbc_n(8),
+
+            // SUB A, r
+            0x97 => self.sub_r_a(4),
+            0x90 => self.sub_r(ByteReg::B, 4),
+            0x91 => self.sub_r(ByteReg::C, 4),
+            0x92 => self.sub_r(ByteReg::D, 4),
+            0x93 => self.sub_r(ByteReg::E, 4),
+            0x94 => self.sub_r(ByteReg::H, 4),
+            0x95 => self.sub_r(ByteReg::L, 4),
+
+            // SUB A, (HL)
+            0x96 => self.sub_hl(8),
+
+            // SUB A, n
+            0xd6 => self.sub_n(8),
 
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
@@ -296,6 +311,15 @@ impl SM83 {
 
         self.reg.check_zero(self.reg.a);
         self.reg.check_half_carry(self.reg.a as u16);
+    }
+
+    fn cp_r_a(&mut self, cycles: usize) {
+        let a = self.reg.a;
+
+        self.reg.check_zero(a.wrapping_sub(a));
+        self.reg.subtract(true);
+
+        self.bus.tick(cycles);
     }
 
     fn cp_r(&mut self, reg: ByteReg, cycles: usize) {
@@ -452,6 +476,45 @@ impl SM83 {
     }
 
     fn sbc_n(&mut self, cycles: usize) {
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        check_all!(self, n, self.reg.a, true);
+    }
+
+    fn sub_r_a(&mut self, cycles: usize) {
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(self.reg.a - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+        self.reg.subtract(true);
+    }
+
+    fn sub_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        check_all!(self, reg, self.reg.a, true);
+    }
+
+    fn sub_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        check_all!(self, hl, self.reg.a, true);
+    }
+
+    fn sub_n(&mut self, cycles: usize) {
         let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
 
