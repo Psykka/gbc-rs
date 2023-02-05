@@ -29,7 +29,6 @@ pub struct SM83 {
     pub pc: u16,
 }
 
-
 // TODO: remove self.reg.substract, set with self.reg.set_flags
 impl SM83 {
     pub fn new() -> Self {
@@ -225,8 +224,102 @@ impl SM83 {
         self.pc += 1;
 
         match op {
-            // BIT b, r
-            0x47 => todo!(),
+            // BIT b0, r
+            0x47 => self.bit_r(0, ByteReg::A, 8),
+            0x40 => self.bit_r(0, ByteReg::B, 8),
+            0x41 => self.bit_r(0, ByteReg::C, 8),
+            0x42 => self.bit_r(0, ByteReg::D, 8),
+            0x43 => self.bit_r(0, ByteReg::E, 8),
+            0x44 => self.bit_r(0, ByteReg::H, 8),
+            0x45 => self.bit_r(0, ByteReg::L, 8),
+
+            // BIT b0, (HL)
+            0x46 => self.bit_hl(0, 12),
+
+            // BIT b1, r
+            0x4f => self.bit_r(1, ByteReg::A, 8),
+            0x48 => self.bit_r(1, ByteReg::B, 8),
+            0x49 => self.bit_r(1, ByteReg::C, 8),
+            0x4a => self.bit_r(1, ByteReg::D, 8),
+            0x4b => self.bit_r(1, ByteReg::E, 8),
+            0x4c => self.bit_r(1, ByteReg::H, 8),
+            0x4d => self.bit_r(1, ByteReg::L, 8),
+
+            // BIT b1, (HL)
+            0x4e => self.bit_hl(1, 12),
+
+            // BIT b2, r
+            0x57 => self.bit_r(2, ByteReg::A, 8),
+            0x50 => self.bit_r(2, ByteReg::B, 8),
+            0x51 => self.bit_r(2, ByteReg::C, 8),
+            0x52 => self.bit_r(2, ByteReg::D, 8),
+            0x53 => self.bit_r(2, ByteReg::E, 8),
+            0x54 => self.bit_r(2, ByteReg::H, 8),
+            0x55 => self.bit_r(2, ByteReg::L, 8),
+
+            // BIT b2, (HL)
+            0x56 => self.bit_hl(2, 12),
+
+            // BIT b3, r
+            0x5f => self.bit_r(3, ByteReg::A, 8),
+            0x58 => self.bit_r(3, ByteReg::B, 8),
+            0x59 => self.bit_r(3, ByteReg::C, 8),
+            0x5a => self.bit_r(3, ByteReg::D, 8),
+            0x5b => self.bit_r(3, ByteReg::E, 8),
+            0x5c => self.bit_r(3, ByteReg::H, 8),
+            0x5d => self.bit_r(3, ByteReg::L, 8),
+
+            // BIT b3, (HL)
+            0x5e => self.bit_hl(3, 12),
+
+            // BIT b4, r
+            0x67 => self.bit_r(4, ByteReg::A, 8),
+            0x60 => self.bit_r(4, ByteReg::B, 8),
+            0x61 => self.bit_r(4, ByteReg::C, 8),
+            0x62 => self.bit_r(4, ByteReg::D, 8),
+            0x63 => self.bit_r(4, ByteReg::E, 8),
+            0x64 => self.bit_r(4, ByteReg::H, 8),
+            0x65 => self.bit_r(4, ByteReg::L, 8),
+
+            // BIT b4, (HL)
+            0x66 => self.bit_hl(4, 12),
+
+            // BIT b5, r
+            0x6f => self.bit_r(5, ByteReg::A, 8),
+            0x68 => self.bit_r(5, ByteReg::B, 8),
+            0x69 => self.bit_r(5, ByteReg::C, 8),
+            0x6a => self.bit_r(5, ByteReg::D, 8),
+            0x6b => self.bit_r(5, ByteReg::E, 8),
+            0x6c => self.bit_r(5, ByteReg::H, 8),
+            0x6d => self.bit_r(5, ByteReg::L, 8),
+
+            // BIT b5, (HL)
+            0x6e => self.bit_hl(5, 12),
+
+            // BIT b6, r
+            0x77 => self.bit_r(6, ByteReg::A, 8),
+            0x70 => self.bit_r(6, ByteReg::B, 8),
+            0x71 => self.bit_r(6, ByteReg::C, 8),
+            0x72 => self.bit_r(6, ByteReg::D, 8),
+            0x73 => self.bit_r(6, ByteReg::E, 8),
+            0x74 => self.bit_r(6, ByteReg::H, 8),
+            0x75 => self.bit_r(6, ByteReg::L, 8),
+
+            // BIT b6, (HL)
+            0x76 => self.bit_hl(6, 12),
+
+            // BIT b7, r
+            0x7f => self.bit_r(7, ByteReg::A, 8),
+            0x78 => self.bit_r(7, ByteReg::B, 8),
+            0x79 => self.bit_r(7, ByteReg::C, 8),
+            0x7a => self.bit_r(7, ByteReg::D, 8),
+            0x7b => self.bit_r(7, ByteReg::E, 8),
+            0x7c => self.bit_r(7, ByteReg::H, 8),
+            0x7d => self.bit_r(7, ByteReg::L, 8),
+
+            // BIT b7, (HL)
+            0x7e => self.bit_hl(7, 12),
+
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
     }
@@ -245,10 +338,8 @@ impl SM83 {
     fn adc_hl(&mut self, cycles: usize) {
         let hl = self.reg.get_word(WordReg::HL);
         let data = self.bus.read(Size::Byte, hl as usize) as u8;
-        self.reg.set_byte(
-            ByteReg::A,
-            self.reg.a + data + self.reg.get_carry() as u8,
-        );
+        self.reg
+            .set_byte(ByteReg::A, self.reg.a + data + self.reg.get_carry() as u8);
 
         self.bus.tick(cycles);
 
@@ -259,7 +350,7 @@ impl SM83 {
         let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
         self.reg
-            .set_byte(ByteReg::A, self.reg.a + n + self.reg.get_carry() as u8,);
+            .set_byte(ByteReg::A, self.reg.a + n + self.reg.get_carry() as u8);
 
         self.bus.tick(cycles);
 
@@ -304,7 +395,8 @@ impl SM83 {
         self.bus.tick(cycles);
 
         self.reg.subtract(false);
-        self.reg.check_half_carry(self.reg.get_word(WordReg::HL) as u16);
+        self.reg
+            .check_half_carry(self.reg.get_word(WordReg::HL) as u16);
         self.reg.check_carry(self.reg.get_word(WordReg::HL) as u16);
     }
 
@@ -326,7 +418,7 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
-        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
+        self.reg.set_flags(HALF_CARRY);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -337,7 +429,7 @@ impl SM83 {
         self.reg.set_byte(ByteReg::A, self.reg.a & data);
         self.bus.tick(cycles);
 
-        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
+        self.reg.set_flags(HALF_CARRY);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -348,7 +440,7 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
-        self.reg.set_flags(HALF_CARRY & !(SUBTRACT | CARRY));
+        self.reg.set_flags(HALF_CARRY);
         self.reg.check_zero(self.reg.a);
     }
 
@@ -357,7 +449,7 @@ impl SM83 {
 
         self.reg.check_zero(a.wrapping_sub(a));
 
-        self.reg.set_flags(ZERO | SUBTRACT & !(HALF_CARRY | CARRY));
+        self.reg.set_flags(ZERO | SUBTRACT);
 
         self.bus.tick(cycles);
     }
@@ -486,7 +578,9 @@ impl SM83 {
     fn sbc_r_a(&mut self, cycles: usize) {
         self.reg.set_byte(
             ByteReg::A,
-            self.reg.a.wrapping_sub(self.reg.a - self.reg.get_carry() as u8)
+            self.reg
+                .a
+                .wrapping_sub(self.reg.a - self.reg.get_carry() as u8),
         );
 
         self.bus.tick(cycles);
@@ -499,7 +593,9 @@ impl SM83 {
     fn sbc_r(&mut self, reg: ByteReg, cycles: usize) {
         self.reg.set_byte(
             ByteReg::A,
-            self.reg.a.wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8)
+            self.reg
+                .a
+                .wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8),
         );
 
         self.bus.tick(cycles);
@@ -511,7 +607,10 @@ impl SM83 {
         let hl = self.reg.get_word(WordReg::HL);
         let data = self.bus.read(Size::Byte, hl as usize) as u8;
 
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
@@ -522,7 +621,10 @@ impl SM83 {
         let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
 
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
@@ -530,16 +632,26 @@ impl SM83 {
     }
 
     fn sub_r_a(&mut self, cycles: usize) {
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(self.reg.a - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg
+                .a
+                .wrapping_sub(self.reg.a - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
-        self.reg.set_flags(ZERO | SUBTRACT & !(HALF_CARRY | CARRY));
+        self.reg.set_flags(ZERO | SUBTRACT);
         self.reg.check_zero(self.reg.a);
     }
 
     fn sub_r(&mut self, reg: ByteReg, cycles: usize) {
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg
+                .a
+                .wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
@@ -550,7 +662,10 @@ impl SM83 {
         let hl = self.reg.get_word(WordReg::HL);
         let data = self.bus.read(Size::Byte, hl as usize) as u8;
 
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
@@ -561,7 +676,10 @@ impl SM83 {
         let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
         self.pc += 1;
 
-        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8));
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8),
+        );
 
         self.bus.tick(cycles);
 
@@ -596,6 +714,23 @@ impl SM83 {
         self.bus.tick(cycles);
 
         self.reg.check_zero(self.reg.a ^ n);
+    }
+
+    fn bit_r(&mut self, bit: u8, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        self.reg.set_flags(HALF_CARRY);
+        self.reg.check_zero(self.reg.get_byte(reg) & (1 << bit));
+    }
+
+    fn bit_hl(&mut self, bit: u8, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        self.reg.set_flags(HALF_CARRY);
+        self.reg.check_zero(data & (1 << bit));
     }
 }
 

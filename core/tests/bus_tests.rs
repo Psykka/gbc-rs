@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use core::bus::Bus;
-    use core::types::Size;
     use core::cartridge::Cartridge;
+    use core::types::Size;
 
     fn create_fake_cartridge(ram_size: Option<u8>) -> Cartridge {
         let mut rom = vec![0; 0x150];

@@ -74,9 +74,7 @@ impl Cartridge {
     pub fn read(&self, size: Size, addr: usize) -> usize {
         match size {
             Size::Byte => self.rom[addr] as usize,
-            Size::Word => {
-                (self.rom[addr + 1] as usize) << 8 | self.rom[addr] as usize
-            }
+            Size::Word => (self.rom[addr + 1] as usize) << 8 | self.rom[addr] as usize,
         }
     }
 

@@ -28,9 +28,9 @@ impl Bus {
 
     pub fn read(&self, size: Size, addr: usize) -> usize {
         match addr {
-            ROM_BANK_00 ..= ROM_BANK_00_END => self.rom.read(size, addr),
-            WRAM_00 ..= WRAM_00_END => self.mem.read(size, addr - WRAM_00),
-            WRAM_01 ..= WRAM_01_END => self.rom.ram.read(size, addr - WRAM_01),
+            ROM_BANK_00..=ROM_BANK_00_END => self.rom.read(size, addr),
+            WRAM_00..=WRAM_00_END => self.mem.read(size, addr - WRAM_00),
+            WRAM_01..=WRAM_01_END => self.rom.ram.read(size, addr - WRAM_01),
             _ => {
                 println!("Ignored read from address: {:04X}", addr);
                 0
@@ -40,8 +40,8 @@ impl Bus {
 
     pub fn write(&mut self, size: Size, addr: usize, data: usize) {
         match addr {
-            WRAM_00 ..= WRAM_00_END => self.mem.write(size, addr - WRAM_00, data),
-            WRAM_01 ..= WRAM_01_END => self.rom.ram.write(size, addr - WRAM_01, data),
+            WRAM_00..=WRAM_00_END => self.mem.write(size, addr - WRAM_00, data),
+            WRAM_01..=WRAM_01_END => self.rom.ram.write(size, addr - WRAM_01, data),
             _ => println!("Ignored write to address: {:04X}", addr),
         }
     }
