@@ -21,7 +21,7 @@ macro_rules! check_all_carrys {
 const ZERO: u8 = 0b1000_0000;
 const SUBTRACT: u8 = 0b0100_0000;
 const HALF_CARRY: u8 = 0b0010_0000;
-const CARRY: u8 = 0b0001_0000;
+// const CARRY: u8 = 0b0001_0000;
 
 pub struct SM83 {
     pub reg: Registers,
@@ -319,6 +319,102 @@ impl SM83 {
 
             // BIT b7, (HL)
             0x7e => self.bit_hl(7, 12),
+
+            // RES b0, r
+            0x87 => self.res_r(0, ByteReg::A, 8),
+            0x80 => self.res_r(0, ByteReg::B, 8),
+            0x81 => self.res_r(0, ByteReg::C, 8),
+            0x82 => self.res_r(0, ByteReg::D, 8),
+            0x83 => self.res_r(0, ByteReg::E, 8),
+            0x84 => self.res_r(0, ByteReg::H, 8),
+            0x85 => self.res_r(0, ByteReg::L, 8),
+
+            // RES b0, (HL)
+            0x86 => self.res_hl(0, 16),
+
+            // RES b1, r
+            0x8f => self.res_r(1, ByteReg::A, 8),
+            0x88 => self.res_r(1, ByteReg::B, 8),
+            0x89 => self.res_r(1, ByteReg::C, 8),
+            0x8a => self.res_r(1, ByteReg::D, 8),
+            0x8b => self.res_r(1, ByteReg::E, 8),
+            0x8c => self.res_r(1, ByteReg::H, 8),
+            0x8d => self.res_r(1, ByteReg::L, 8),
+
+            // RES b1, (HL)
+            0x8e => self.res_hl(1, 16),
+
+            // RES b2, r
+            0x97 => self.res_r(2, ByteReg::A, 8),
+            0x90 => self.res_r(2, ByteReg::B, 8),
+            0x91 => self.res_r(2, ByteReg::C, 8),
+            0x92 => self.res_r(2, ByteReg::D, 8),
+            0x93 => self.res_r(2, ByteReg::E, 8),
+            0x94 => self.res_r(2, ByteReg::H, 8),
+            0x95 => self.res_r(2, ByteReg::L, 8),
+            
+            // RES b2, (HL)
+            0x96 => self.res_hl(2, 16),
+
+            // RES b3, r
+            0x9f => self.res_r(3, ByteReg::A, 8),
+            0x98 => self.res_r(3, ByteReg::B, 8),
+            0x99 => self.res_r(3, ByteReg::C, 8),
+            0x9a => self.res_r(3, ByteReg::D, 8),
+            0x9b => self.res_r(3, ByteReg::E, 8),
+            0x9c => self.res_r(3, ByteReg::H, 8),
+            0x9d => self.res_r(3, ByteReg::L, 8),
+
+            // RES b3, (HL)
+            0x9e => self.res_hl(3, 16),
+
+            // RES b4, r
+            0xa7 => self.res_r(4, ByteReg::A, 8),
+            0xa0 => self.res_r(4, ByteReg::B, 8),
+            0xa1 => self.res_r(4, ByteReg::C, 8),
+            0xa2 => self.res_r(4, ByteReg::D, 8),
+            0xa3 => self.res_r(4, ByteReg::E, 8),
+            0xa4 => self.res_r(4, ByteReg::H, 8),
+            0xa5 => self.res_r(4, ByteReg::L, 8),
+
+            // RES b4, (HL)
+            0xa6 => self.res_hl(4, 16),
+
+            // RES b5, r
+            0xaf => self.res_r(5, ByteReg::A, 8),
+            0xa8 => self.res_r(5, ByteReg::B, 8),
+            0xa9 => self.res_r(5, ByteReg::C, 8),
+            0xaa => self.res_r(5, ByteReg::D, 8),
+            0xab => self.res_r(5, ByteReg::E, 8),
+            0xac => self.res_r(5, ByteReg::H, 8),
+            0xad => self.res_r(5, ByteReg::L, 8),
+
+            // RES b5, (HL)
+            0xae => self.res_hl(5, 16),
+            
+            // RES b6, r
+            0xb7 => self.res_r(6, ByteReg::A, 8),
+            0xb0 => self.res_r(6, ByteReg::B, 8),
+            0xb1 => self.res_r(6, ByteReg::C, 8),
+            0xb2 => self.res_r(6, ByteReg::D, 8),
+            0xb3 => self.res_r(6, ByteReg::E, 8),
+            0xb4 => self.res_r(6, ByteReg::H, 8),
+            0xb5 => self.res_r(6, ByteReg::L, 8),
+            
+            // RES b6, (HL)
+            0xb6 => self.res_hl(6, 16),
+
+            // RES b7, r
+            0xbf => self.res_r(7, ByteReg::A, 8),
+            0xb8 => self.res_r(7, ByteReg::B, 8),
+            0xb9 => self.res_r(7, ByteReg::C, 8),
+            0xba => self.res_r(7, ByteReg::D, 8),
+            0xbb => self.res_r(7, ByteReg::E, 8),
+            0xbc => self.res_r(7, ByteReg::H, 8),
+            0xbd => self.res_r(7, ByteReg::L, 8),
+
+            // RES b7, (HL)
+            0xbe => self.res_hl(7, 16),
 
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
@@ -731,6 +827,22 @@ impl SM83 {
 
         self.reg.set_flags(HALF_CARRY);
         self.reg.check_zero(data & (1 << bit));
+    }
+
+    fn res_r(&mut self, bit: u8, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        println!("#{:4X}",self. reg.get_byte(reg) & !(1 << bit));
+        self.reg.set_byte(reg, self.reg.get_byte(reg) & !(1 << bit));
+    }
+
+    fn res_hl(&mut self, bit: u8, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        self.bus.write(Size::Byte, hl, (data & !(1 << bit)) as usize);
     }
 }
 
