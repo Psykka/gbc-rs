@@ -548,17 +548,17 @@ impl SM83 {
             // RL (HL)
             0x16 => self.rl_hl(16),
 
-            // // RLC r
-            // 0x07 => self.rlc_r(ByteReg::A, 8),
-            // 0x00 => self.rlc_r(ByteReg::B, 8),
-            // 0x01 => self.rlc_r(ByteReg::C, 8),
-            // 0x02 => self.rlc_r(ByteReg::D, 8),
-            // 0x03 => self.rlc_r(ByteReg::E, 8),
-            // 0x04 => self.rlc_r(ByteReg::H, 8),
-            // 0x05 => self.rlc_r(ByteReg::L, 8),
+            // RLC r
+            0x07 => self.rlc_r(ByteReg::A, 8),
+            0x00 => self.rlc_r(ByteReg::B, 8),
+            0x01 => self.rlc_r(ByteReg::C, 8),
+            0x02 => self.rlc_r(ByteReg::D, 8),
+            0x03 => self.rlc_r(ByteReg::E, 8),
+            0x04 => self.rlc_r(ByteReg::H, 8),
+            0x05 => self.rlc_r(ByteReg::L, 8),
 
-            // // RLC (HL)
-            // 0x06 => self.rlc_hl(16),
+            // RLC (HL)
+            0x06 => self.rlc_hl(16),
 
             // // RR r
             // 0x1f => self.rr_r(ByteReg::A, 8),
@@ -1114,6 +1114,35 @@ impl SM83 {
         let carry = self.reg.get_carry() as u8;
 
         let result: u16 = ((data << 1) | carry) as u16;
+
+        self.bus.write(Size::Byte, hl, result as usize);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+        self.reg.check_zero(result as u8);
+    }
+
+    fn rlc_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(reg);
+
+        let result: u16 = ((data << 1) | (data >> 7)) as u16;
+
+        self.reg.set_byte(reg, result as u8);
+
+        self.reg.set_flags(0);
+        self.reg.check_carry(result);
+        self.reg.check_zero(self.reg.get_byte(reg));
+    }
+
+    fn rlc_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.bus.tick(cycles);
+
+        let result: u16 = ((data << 1) | (data >> 7)) as u16;
 
         self.bus.write(Size::Byte, hl, result as usize);
 
