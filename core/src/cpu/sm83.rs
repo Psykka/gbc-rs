@@ -415,6 +415,52 @@ impl SM83 {
 
         self.reg.check_zero(self.reg.a);
     }
+
+    fn sbc_r_a(&mut self, cycles: usize) {
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(self.reg.a - self.reg.get_carry() as u8)
+        );
+
+        self.bus.tick(cycles);
+
+        self.reg.check_zero(self.reg.a);
+        self.reg.subtract(true);
+        self.reg.check_half_carry(self.reg.a as u16);
+    }
+
+    fn sbc_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.reg.set_byte(
+            ByteReg::A,
+            self.reg.a.wrapping_sub(self.reg.get_byte(reg) - self.reg.get_carry() as u8)
+        );
+
+        self.bus.tick(cycles);
+
+        check_all!(self, reg, self.reg.a, true);
+    }
+
+    fn sbc_hl(&mut self, cycles: usize) {
+        let hl = self.reg.get_word(WordReg::HL);
+        let data = self.bus.read(Size::Byte, hl as usize) as u8;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(data - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        check_all!(self, hl, self.reg.a, true);
+    }
+
+    fn sbc_n(&mut self, cycles: usize) {
+        let n = self.bus.read(Size::Byte, self.pc as usize) as u8;
+        self.pc += 1;
+
+        self.reg.set_byte(ByteReg::A, self.reg.a.wrapping_sub(n - self.reg.get_carry() as u8));
+
+        self.bus.tick(cycles);
+
+        check_all!(self, n, self.reg.a, true);
+    }
 }
 
 impl Default for SM83 {

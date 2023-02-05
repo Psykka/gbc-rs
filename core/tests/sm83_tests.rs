@@ -2,6 +2,11 @@
 mod tests {
     use core::cpu::{registers::WordReg, sm83::SM83};
 
+    const ZERO: u8 = 0b1000_0000;
+    const SUB: u8 = 0b0100_0000;
+    const HALF_CARRY: u8 = 0b0010_0000;
+    const CARRY: u8 = 0b0001_0000;
+
     fn create_rom(rom: Vec<u8>) -> Vec<u8> {
         let mut new_rom = vec![0; 0x100];
         new_rom.extend(rom);
@@ -29,20 +34,20 @@ mod tests {
 
         cpu.step();
 
-        assert_eq!(cpu.reg.a, 0x03);
+        assert_eq!(cpu.reg.a, 0x01);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x101);
 
         cpu.step();
 
-        assert_eq!(cpu.reg.a, 0x07);
+        assert_eq!(cpu.reg.a, 0x03);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
-        assert_eq!(cpu.reg.a, 0x10);
-        assert_eq!(cpu.reg.f, 0x20);
+        assert_eq!(cpu.reg.a, 0x06);
+        assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x103);
     }
 
@@ -240,13 +245,13 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, 0x80);
+        assert_eq!(cpu.reg.f, ZERO);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, 0x80);
+        assert_eq!(cpu.reg.f, ZERO);
         assert_eq!(cpu.pc, 0x103);
     }
 
@@ -308,19 +313,19 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x101);
 
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0x60);
+        assert_eq!(cpu.reg.f, SUB | HALF_CARRY);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x103);
     }
 
@@ -341,7 +346,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x101);
     }
 
@@ -360,7 +365,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x01);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x102);
     }
 
@@ -384,25 +389,25 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x101);
 
         cpu.step();
 
         assert_eq!(cpu.reg.b, 0x00);
-        assert_eq!(cpu.reg.f, 0xc0);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
         assert_eq!(cpu.pc, 0x102);
 
         cpu.step();
 
         assert_eq!(cpu.reg.c, 0x01);
-        assert_eq!(cpu.reg.f, 0x40);
+        assert_eq!(cpu.reg.f, SUB);
         assert_eq!(cpu.pc, 0x103);
 
         cpu.step();
 
         assert_eq!(cpu.reg.d, 0xff);
-        assert_eq!(cpu.reg.f, 0x60);
+        assert_eq!(cpu.reg.f, SUB | HALF_CARRY);
         assert_eq!(cpu.pc, 0x104);
     }
 
@@ -421,7 +426,7 @@ mod tests {
 
         cpu.step();
 
-        assert_eq!(cpu.reg.f, 0x60);
+        assert_eq!(cpu.reg.f, SUB | HALF_CARRY);
         assert_eq!(cpu.pc, 0x101);
     }
 
@@ -513,7 +518,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.e, 0x00);
-        assert_eq!(cpu.reg.f, 0x80);
+        assert_eq!(cpu.reg.f, ZERO);
         assert_eq!(cpu.pc, 0x105);
     }
 
@@ -627,7 +632,7 @@ mod tests {
         cpu.step();
 
         assert_eq!(cpu.reg.a, 0x00);
-        assert_eq!(cpu.reg.f, 0x80);
+        assert_eq!(cpu.reg.f, ZERO);
         assert_eq!(cpu.pc, 0x105);
     }
 
@@ -669,5 +674,82 @@ mod tests {
         assert_eq!(cpu.reg.a, 0x01);
         assert_eq!(cpu.reg.f, 0x00);
         assert_eq!(cpu.pc, 0x102);
+    }
+
+    #[test]
+    fn test_sbc_r_a() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+        cpu.reg.f = 0x10;
+
+        let rom = create_rom(vec![
+            0x9f, // SBC A, A
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x01);
+        assert_eq!(cpu.reg.f, SUB | CARRY);
+        assert_eq!(cpu.pc, 0x101);
+    }
+
+    #[test]
+    fn test_sbc_r() {
+        let mut cpu = SM83::new();
+        cpu.reg.a = 0x01;
+        cpu.reg.b = 0x01;
+        cpu.reg.c = 0x02;
+        cpu.reg.e = 0xff;
+
+
+        let rom = create_rom(vec![
+            0x98, // SBC A, B
+            0x99, // SBC A, C
+            0x9b, // SBC A, E
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x00);
+        assert_eq!(cpu.reg.f, ZERO | SUB);
+        assert_eq!(cpu.pc, 0x101);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0xfe);
+        assert_eq!(cpu.reg.f, SUB | HALF_CARRY);
+        assert_eq!(cpu.pc, 0x102);
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0xff);
+        assert_eq!(cpu.reg.f, SUB | HALF_CARRY);
+        assert_eq!(cpu.pc, 0x103);
+    }
+
+    #[test]
+    fn test_sbc_hl() {
+        let mut cpu = SM83::new();
+        cpu.reg.set_word(WordReg::HL, 0x102);
+        cpu.reg.a = 0x01;
+        cpu.reg.f = 0x10;
+
+        let rom = create_rom(vec![
+            0x9e, // SBC A, (HL)
+            0x00, // F = 0x00
+            0x01  // A = 0x01
+        ]);
+
+        cpu.bus.rom.load_new_rom(&rom).unwrap();
+
+        cpu.step();
+
+        assert_eq!(cpu.reg.a, 0x01);
+        assert_eq!(cpu.reg.f, SUB);
+        assert_eq!(cpu.pc, 0x101);
     }
 }
