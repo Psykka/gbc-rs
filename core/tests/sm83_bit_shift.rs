@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use core::{types::Size, cpu::{sm83::SM83, registers::WordReg}};
+    use core::{
+        cpu::{registers::WordReg, sm83::SM83},
+        types::Size,
+    };
 
     const ZERO: u8 = 0b1000_0000;
     // const SUB: u8 = 0b0100_0000;
@@ -185,7 +188,6 @@ mod tests {
         ]);
 
         cpu.bus.rom.load_new_rom(&rom).unwrap();
-
 
         cpu.step();
 

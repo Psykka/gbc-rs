@@ -235,6 +235,124 @@ impl SM83 {
             // RRCA
             0x0f => self.rrca(4),
 
+            // LD r, r
+            0x7f => self.ld_r_r(ByteReg::A, ByteReg::A, 4),
+            0x78 => self.ld_r_r(ByteReg::A, ByteReg::B, 4),
+            0x79 => self.ld_r_r(ByteReg::A, ByteReg::C, 4),
+            0x7a => self.ld_r_r(ByteReg::A, ByteReg::D, 4),
+            0x7b => self.ld_r_r(ByteReg::A, ByteReg::E, 4),
+            0x7c => self.ld_r_r(ByteReg::A, ByteReg::H, 4),
+            0x7d => self.ld_r_r(ByteReg::A, ByteReg::L, 4),
+
+            0x47 => self.ld_r_r(ByteReg::B, ByteReg::A, 4),
+            0x40 => self.ld_r_r(ByteReg::B, ByteReg::B, 4),
+            0x41 => self.ld_r_r(ByteReg::B, ByteReg::C, 4),
+            0x42 => self.ld_r_r(ByteReg::B, ByteReg::D, 4),
+            0x43 => self.ld_r_r(ByteReg::B, ByteReg::E, 4),
+            0x44 => self.ld_r_r(ByteReg::B, ByteReg::H, 4),
+
+            0x4f => self.ld_r_r(ByteReg::C, ByteReg::A, 4),
+            0x48 => self.ld_r_r(ByteReg::C, ByteReg::B, 4),
+            0x49 => self.ld_r_r(ByteReg::C, ByteReg::C, 4),
+            0x4a => self.ld_r_r(ByteReg::C, ByteReg::D, 4),
+            0x4b => self.ld_r_r(ByteReg::C, ByteReg::E, 4),
+            0x4c => self.ld_r_r(ByteReg::C, ByteReg::H, 4),
+
+            0x57 => self.ld_r_r(ByteReg::D, ByteReg::A, 4),
+            0x50 => self.ld_r_r(ByteReg::D, ByteReg::B, 4),
+            0x51 => self.ld_r_r(ByteReg::D, ByteReg::C, 4),
+            0x52 => self.ld_r_r(ByteReg::D, ByteReg::D, 4),
+            0x53 => self.ld_r_r(ByteReg::D, ByteReg::E, 4),
+            0x54 => self.ld_r_r(ByteReg::D, ByteReg::H, 4),
+
+            0x5f => self.ld_r_r(ByteReg::E, ByteReg::A, 4),
+            0x58 => self.ld_r_r(ByteReg::E, ByteReg::B, 4),
+            0x59 => self.ld_r_r(ByteReg::E, ByteReg::C, 4),
+            0x5a => self.ld_r_r(ByteReg::E, ByteReg::D, 4),
+            0x5b => self.ld_r_r(ByteReg::E, ByteReg::E, 4),
+            0x5c => self.ld_r_r(ByteReg::E, ByteReg::H, 4),
+
+            0x67 => self.ld_r_r(ByteReg::H, ByteReg::A, 4),
+            0x60 => self.ld_r_r(ByteReg::H, ByteReg::B, 4),
+            0x61 => self.ld_r_r(ByteReg::H, ByteReg::C, 4),
+            0x62 => self.ld_r_r(ByteReg::H, ByteReg::D, 4),
+            0x63 => self.ld_r_r(ByteReg::H, ByteReg::E, 4),
+            0x64 => self.ld_r_r(ByteReg::H, ByteReg::H, 4),
+
+            0x6f => self.ld_r_r(ByteReg::L, ByteReg::A, 4),
+            0x68 => self.ld_r_r(ByteReg::L, ByteReg::B, 4),
+            0x69 => self.ld_r_r(ByteReg::L, ByteReg::C, 4),
+            0x6a => self.ld_r_r(ByteReg::L, ByteReg::D, 4),
+            0x6b => self.ld_r_r(ByteReg::L, ByteReg::E, 4),
+            0x6c => self.ld_r_r(ByteReg::L, ByteReg::H, 4),
+
+            // LD r, n
+            0x3e => self.ld_r_n(ByteReg::A, 8),
+            0x06 => self.ld_r_n(ByteReg::B, 8),
+            0x0e => self.ld_r_n(ByteReg::C, 8),
+            0x16 => self.ld_r_n(ByteReg::D, 8),
+            0x1e => self.ld_r_n(ByteReg::E, 8),
+            0x26 => self.ld_r_n(ByteReg::H, 8),
+            0x2e => self.ld_r_n(ByteReg::L, 8),
+
+            // LD r, (HL)
+            0x7e => self.ld_r_hl(ByteReg::A, 8),
+            0x46 => self.ld_r_hl(ByteReg::B, 8),
+            0x4e => self.ld_r_hl(ByteReg::C, 8),
+            0x56 => self.ld_r_hl(ByteReg::D, 8),
+            0x5e => self.ld_r_hl(ByteReg::E, 8),
+            0x66 => self.ld_r_hl(ByteReg::H, 8),
+            0x6e => self.ld_r_hl(ByteReg::L, 8),
+
+            // LD (HL), r
+            0x77 => self.ld_hl_r(ByteReg::A, 8),
+            0x70 => self.ld_hl_r(ByteReg::B, 8),
+            0x71 => self.ld_hl_r(ByteReg::C, 8),
+            0x72 => self.ld_hl_r(ByteReg::D, 8),
+            0x73 => self.ld_hl_r(ByteReg::E, 8),
+            0x74 => self.ld_hl_r(ByteReg::H, 8),
+            0x75 => self.ld_hl_r(ByteReg::L, 8),
+
+            // LD (HL), n
+            0x36 => self.ld_hl_n(12),
+
+            // LD A, rr
+            0x0a => self.ld_a_rr(WordReg::BC, 8),
+            0x1a => self.ld_a_rr(WordReg::DE, 8),
+
+            // LD rr, A
+            0x02 => self.ld_rr_a(WordReg::BC, 8),
+            0x12 => self.ld_rr_a(WordReg::DE, 8),
+
+            // LD A, (HL+/HL-)
+            0x2a => self.ld_a_hl(8, true),
+            0x3a => self.ld_a_hl(8, false),
+
+            // LD (HL+/HL-), A
+            0x22 => self.ld_hl_a(8, true),
+            0x32 => self.ld_hl_a(8, false),
+
+            // LD A, nn
+            0xfa => self.ld_a_nn(16),
+
+            // LD nn, A
+            0xea => self.ld_nn_a(16),
+
+            // LD A, (C)
+            // 0xf2 => self.ld_a_c(8),
+
+            // LD (C), A
+            // 0xe2 => self.ld_c_a(8),
+
+            // LDH A, n
+            // 0xf0 => self.ldh_a_n(12),
+
+            // LDH n, A
+            // 0xe0 => self.ldh_n_a(12),
+
+            // TODO: Jump and subroutine instructions:  CALL, JP, JR, RET, RETI, RST
+            // TODO: Stack instructions: POP, PUSH
+            // TODO: Misc instructions: CCF, CPL, DAA, DI, EI, HALT, NOP, SCF, STOP
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -372,7 +490,7 @@ impl SM83 {
             0x93 => self.res_r(2, ByteReg::E, 8),
             0x94 => self.res_r(2, ByteReg::H, 8),
             0x95 => self.res_r(2, ByteReg::L, 8),
-            
+
             // RES b2, (HL)
             0x96 => self.res_hl(2, 16),
 
@@ -411,7 +529,7 @@ impl SM83 {
 
             // RES b5, (HL)
             0xae => self.res_hl(5, 16),
-            
+
             // RES b6, r
             0xb7 => self.res_r(6, ByteReg::A, 8),
             0xb0 => self.res_r(6, ByteReg::B, 8),
@@ -420,7 +538,7 @@ impl SM83 {
             0xb3 => self.res_r(6, ByteReg::E, 8),
             0xb4 => self.res_r(6, ByteReg::H, 8),
             0xb5 => self.res_r(6, ByteReg::L, 8),
-            
+
             // RES b6, (HL)
             0xb6 => self.res_hl(6, 16),
 
@@ -628,8 +746,7 @@ impl SM83 {
             // SRL (HL)
             0x3e => self.srl_hl(16),
 
-            // DONE! all 0xcb prefixed instructions - thx god 
-
+            // DONE! all 0xcb prefixed instructions - thx god
             _ => panic!("Unimplemented prefix $cb: {:02x}", op),
         }
     }
@@ -1046,7 +1163,7 @@ impl SM83 {
     fn res_r(&mut self, bit: u8, reg: ByteReg, cycles: usize) {
         self.bus.tick(cycles);
 
-        println!("#{:4X}",self. reg.get_byte(reg) & !(1 << bit));
+        println!("#{:4X}", self.reg.get_byte(reg) & !(1 << bit));
         self.reg.set_byte(reg, self.reg.get_byte(reg) & !(1 << bit));
     }
 
@@ -1056,7 +1173,8 @@ impl SM83 {
 
         self.bus.tick(cycles);
 
-        self.bus.write(Size::Byte, hl, (data & !(1 << bit)) as usize);
+        self.bus
+            .write(Size::Byte, hl, (data & !(1 << bit)) as usize);
     }
 
     fn set_r(&mut self, bit: u8, reg: ByteReg, cycles: usize) {
@@ -1316,6 +1434,110 @@ impl SM83 {
 
         self.reg.set_flags(0);
         self.reg.check_carry(result);
+    }
+
+    fn ld_r_r(&mut self, reg1: ByteReg, reg2: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(reg2);
+        self.reg.set_byte(reg1, data);
+    }
+
+    fn ld_r_n(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.bus.read(Size::Byte, self.pc as usize);
+        self.reg.set_byte(reg, data as u8);
+        self.pc += 1;
+    }
+
+    fn ld_r_hl(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize);
+        self.reg.set_byte(reg, data as u8);
+    }
+
+    fn ld_hl_r(&mut self, reg: ByteReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.reg.get_byte(reg);
+        self.bus.write(Size::Byte, hl, data as usize);
+    }
+
+    fn ld_hl_n(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, self.pc as usize);
+        self.bus.write(Size::Byte, hl, data as usize);
+        self.pc += 1;
+    }
+
+    fn ld_a_rr(&mut self, reg: WordReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = self.reg.get_word(reg) as usize;
+        self.bus
+            .write(Size::Byte, addr, self.reg.get_byte(ByteReg::A) as usize);
+    }
+
+    fn ld_rr_a(&mut self, reg: WordReg, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = self.reg.get_word(reg) as usize;
+        self.reg
+            .set_byte(ByteReg::A, self.bus.read(Size::Byte, addr) as u8);
+    }
+
+    fn ld_a_nn(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.bus.read(Size::Word, self.pc as usize);
+        self.reg.set_byte(ByteReg::A, data as u8);
+        self.pc += 2;
+    }
+
+    fn ld_nn_a(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let data = self.reg.get_byte(ByteReg::A);
+        self.bus.write(Size::Word, self.pc as usize, data as usize);
+        self.pc += 2;
+    }
+
+    fn ld_a_hl(&mut self, cycles: usize, offset: bool) {
+        self.bus.tick(cycles);
+
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.bus.read(Size::Byte, hl as usize);
+        self.reg.set_byte(ByteReg::A, data as u8);
+
+        let next = if offset {
+            (hl + 1) as u16
+        } else {
+            (hl - 1) as u16
+        };
+
+        self.reg.set_word(WordReg::HL, next);
+    }
+
+    fn ld_hl_a(&mut self, cycles: usize, offset: bool) {
+        self.bus.tick(cycles);
+
+        let hl = self.reg.get_word(WordReg::HL) as usize;
+        let data = self.reg.get_byte(ByteReg::A);
+        self.bus.write(Size::Byte, hl, data as usize);
+
+        let next = if offset {
+            (hl + 1) as u16
+        } else {
+            (hl - 1) as u16
+        };
+
+        self.reg.set_word(WordReg::HL, next);
     }
 }
 

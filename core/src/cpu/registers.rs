@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Copy)]
 pub enum WordReg {
     AF,
@@ -148,5 +150,42 @@ impl Registers {
 impl Default for Registers {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Display for Registers {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "A: {:02x} F: {:02x} B: {:02x} C: {:02x} D: {:02x} E: {:02x} H: {:02x} L: {:02x} SP: {:04x}",
+            self.a, self.f, self.b, self.c, self.d, self.e, self.h, self.l, self.sp
+        )
+    }
+}
+
+impl Display for WordReg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WordReg::AF => write!(f, "AF"),
+            WordReg::BC => write!(f, "BC"),
+            WordReg::DE => write!(f, "DE"),
+            WordReg::HL => write!(f, "HL"),
+            WordReg::SP => write!(f, "SP"),
+        }
+    }
+}
+
+impl Display for ByteReg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ByteReg::A => write!(f, "A"),
+            ByteReg::B => write!(f, "B"),
+            ByteReg::C => write!(f, "C"),
+            ByteReg::D => write!(f, "D"),
+            ByteReg::E => write!(f, "E"),
+            ByteReg::F => write!(f, "F"),
+            ByteReg::H => write!(f, "H"),
+            ByteReg::L => write!(f, "L"),
+        }
     }
 }

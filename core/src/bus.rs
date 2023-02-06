@@ -11,6 +11,9 @@ const WRAM_00_END: usize = 0xCFFF;
 const WRAM_01: usize = 0xD000;
 const WRAM_01_END: usize = 0xDFFF;
 
+const IO_PORTS: usize = 0xFF00;
+const IO_PORTS_END: usize = 0xFF7F;
+
 pub struct Bus {
     pub mem: Memory,
     pub rom: Cartridge,
@@ -31,6 +34,10 @@ impl Bus {
             ROM_BANK_00..=ROM_BANK_00_END => self.rom.read(size, addr),
             WRAM_00..=WRAM_00_END => self.mem.read(size, addr - WRAM_00),
             WRAM_01..=WRAM_01_END => self.rom.ram.read(size, addr - WRAM_01),
+            IO_PORTS..=IO_PORTS_END => {
+                println!("Read from IO port: {:04X}", addr);
+                1
+            }
             _ => {
                 println!("Ignored read from address: {:04X}", addr);
                 0
@@ -39,9 +46,11 @@ impl Bus {
     }
 
     pub fn write(&mut self, size: Size, addr: usize, data: usize) {
+        println!("Write to address: {:04X}", addr);
         match addr {
             WRAM_00..=WRAM_00_END => self.mem.write(size, addr - WRAM_00, data),
             WRAM_01..=WRAM_01_END => self.rom.ram.write(size, addr - WRAM_01, data),
+            IO_PORTS..=IO_PORTS_END => println!("Write to IO port: {:04X}", addr),
             _ => println!("Ignored write to address: {:04X}", addr),
         }
     }
