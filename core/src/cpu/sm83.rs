@@ -339,20 +339,21 @@ impl SM83 {
             0xea => self.ld_nn_a(16),
 
             // LD A, (C)
-            // 0xf2 => self.ld_a_c(8),
+            0xf2 => self.ld_a_c(8),
 
             // LD (C), A
-            // 0xe2 => self.ld_c_a(8),
+            0xe2 => self.ld_c_a(8),
 
             // LDH A, n
-            // 0xf0 => self.ldh_a_n(12),
+            0xf0 => self.ldh_a_n(12),
 
             // LDH n, A
-            // 0xe0 => self.ldh_n_a(12),
+            0xe0 => self.ldh_n_a(12),
 
             // TODO: Jump and subroutine instructions:  CALL, JP, JR, RET, RETI, RST
             // TODO: Stack instructions: POP, PUSH
             // TODO: Misc instructions: CCF, CPL, DAA, DI, EI, HALT, NOP, SCF, STOP
+
             _ => panic!("Unimplemented opcode: {:02x}", op),
         }
     }
@@ -1538,6 +1539,40 @@ impl SM83 {
         };
 
         self.reg.set_word(WordReg::HL, next);
+    }
+
+    fn ld_a_c(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = 0xFF00 + self.reg.get_byte(ByteReg::C) as usize;
+        self.reg
+            .set_byte(ByteReg::A, self.bus.read(Size::Byte, addr) as u8);
+    }
+
+    fn ld_c_a(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = 0xFF00 + self.reg.get_byte(ByteReg::C) as usize;
+        self.bus
+            .write(Size::Byte, addr, self.reg.get_byte(ByteReg::A) as usize);
+    }
+
+    fn ldh_a_n(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = 0xFF00 + self.bus.read(Size::Byte, self.pc as usize) as usize;
+        self.reg
+            .set_byte(ByteReg::A, self.bus.read(Size::Byte, addr) as u8);
+        self.pc += 1;
+    }
+
+    fn ldh_n_a(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = 0xFF00 + self.bus.read(Size::Byte, self.pc as usize) as usize;
+        self.bus
+            .write(Size::Byte, addr, self.reg.get_byte(ByteReg::A) as usize);
+        self.pc += 1;
     }
 }
 
