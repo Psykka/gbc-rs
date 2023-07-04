@@ -29,7 +29,7 @@ macro_rules! clear_flag_and_check_zero_carry {
 const ZERO: u8 = 0b1000_0000;
 const SUBTRACT: u8 = 0b0100_0000;
 const HALF_CARRY: u8 = 0b0010_0000;
-// const CARRY: u8 = 0b0001_0000;
+const CARRY: u8 = 0b0001_0000;
 
 pub struct SM83 {
     pub reg: Registers,
@@ -350,7 +350,22 @@ impl SM83 {
             // LDH n, A
             0xe0 => self.ldh_n_a(12),
 
-            // TODO: Jump and subroutine instructions:  CALL, JP, JR, RET, RETI, RST
+            // TODO: Jump and subroutine instructions: JP, JR, RET, RETI, RST
+
+            // CALL nn
+            0xcd => self.call_nn(24),
+
+            // CALL cc, nn
+            0xc4 => self.call_cc_nn(ZERO | SUBTRACT, 24),
+            0xd4 => self.call_cc_nn(CARRY | SUBTRACT, 24),
+
+            // CALL C, nn
+            0xdc => self.call_cc_nn(CARRY, 24),
+
+            // CALL Z, nn
+            0xcc => self.call_cc_nn(ZERO, 24),
+
+
             // TODO: Stack instructions: POP, PUSH
             // TODO: Misc instructions: CCF, CPL, DAA, DI, EI, HALT, NOP, SCF, STOP
 
@@ -1573,6 +1588,28 @@ impl SM83 {
         self.bus
             .write(Size::Byte, addr, self.reg.get_byte(ByteReg::A) as usize);
         self.pc += 1;
+    }
+
+    fn call_nn(&mut self, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = self.bus.read(Size::Word, self.pc as usize);
+        self.pc += 2;
+
+        self.reg.push_word(self.pc);
+        self.pc = addr as u16;
+    }
+
+    fn call_cc_nn(&mut self, cond: u8, cycles: usize) {
+        self.bus.tick(cycles);
+
+        let addr = self.bus.read(Size::Word, self.pc as usize);
+        self.pc += 2;
+
+        if self.reg.f & cond != 0 {
+            self.reg.push_word(self.pc);
+            self.pc = addr as u16;
+        }
     }
 }
 

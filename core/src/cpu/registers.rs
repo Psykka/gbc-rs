@@ -145,6 +145,11 @@ impl Registers {
     pub fn set_flags(&mut self, data: u8) {
         self.f = data;
     }
+
+    pub fn push_word(&mut self, data: u16) {
+        self.sp -= 2;
+        self.set_word(WordReg::SP, data);
+    }
 }
 
 impl Default for Registers {
