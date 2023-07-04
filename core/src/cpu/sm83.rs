@@ -365,7 +365,6 @@ impl SM83 {
             // CALL Z, nn
             0xcc => self.call_cc_nn(ZERO, 24),
 
-
             // TODO: Stack instructions: POP, PUSH
             // TODO: Misc instructions: CCF, CPL, DAA, DI, EI, HALT, NOP, SCF, STOP
 

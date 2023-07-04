@@ -147,7 +147,6 @@ impl Registers {
     }
 
     pub fn push_word(&mut self, data: u16) {
-        self.sp -= 2;
         self.set_word(WordReg::SP, data);
     }
 }
