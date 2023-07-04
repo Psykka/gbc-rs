@@ -1,9 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use core::{
-        cpu::{registers::WordReg, sm83::SM83},
-        types::Size,
-    };
+    use core::cpu::sm83::SM83;
 
     // const ZERO: u8 = 0b1000_0000;
     // const SUB: u8 = 0b0100_0000;
